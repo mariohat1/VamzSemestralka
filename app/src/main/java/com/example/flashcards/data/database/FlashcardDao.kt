@@ -1,4 +1,4 @@
-package com.example.flashcards.data
+package com.example.flashcards.data.database
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import com.example.flashcards.data.entities.Flashcard
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FlashcardDao {
@@ -19,8 +20,8 @@ interface FlashcardDao {
     fun updateFlashcard(flashcard: Flashcard)
 
     @Query("SELECT * FROM Flashcard")
-    suspend fun getAllFlashcards(): List<Flashcard>
+    fun getAllFlashcards(): Flow<List<Flashcard>>
 
     @Query("SELECT * FROM Flashcard WHERE flashcardId = :flashcardId")
-    suspend fun getFlashcardById(flashcardId: Long): Flashcard
+    fun getFlashcardById(flashcardId: Long): Flashcard
 }
