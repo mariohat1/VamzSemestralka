@@ -11,17 +11,17 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FlashcardDao {
     @Insert
-    fun insertFlashcard(flashcard: Flashcard)
+     fun insertFlashcard(flashcard: Flashcard)
 
     @Delete
-    fun deleteFlashcard(flashcard: Flashcard)
+     fun deleteFlashcard(flashcard: Flashcard)
 
     @Update
-    fun updateFlashcard(flashcard: Flashcard)
+     fun updateFlashcard(flashcard: Flashcard)
 
     @Query("SELECT * FROM Flashcard")
-    fun getAllFlashcards(): Flow<List<Flashcard>>
+     fun getAllFlashcards(): Flow<List<Flashcard>>
 
     @Query("SELECT * FROM Flashcard WHERE flashcardId = :flashcardId")
-    fun getFlashcardById(flashcardId: Long): Flashcard
+     fun getFlashcardById(flashcardId: Int): Flashcard
 }

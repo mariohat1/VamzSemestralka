@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Deck(
     @PrimaryKey
-    val deckId: Long,
-    val flashcardId : Long,
+    val deckId: Int,
+
     val name: String
 )

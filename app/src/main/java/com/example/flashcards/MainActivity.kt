@@ -11,25 +11,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.flashcards.data.database.FlaschcardDatabase
+import com.example.flashcards.data.entities.Flashcard
+import com.example.flashcards.data.repository.DeckRepository
+import com.example.flashcards.data.repository.FlashcardRepository
+import com.example.flashcards.ui.HomeScreen
 import com.example.flashcards.ui.theme.FlashCardsTheme
+import com.example.flashcards.viewModel.HomeScreenViewModel
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
-            FlashCardsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
 
-                    )
-                }
-            }
+
+        setContent {
+            FlashcardApp()
         }
     }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

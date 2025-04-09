@@ -8,27 +8,28 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
+import com.example.flashcards.data.entities.Flashcard
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DeckDao {
     @Insert
-     fun insertDeck(deck: Deck)
+    suspend fun insertDeck(deck: Deck)
 
     @Update
-     fun updateDeck(deck: Deck)
+    suspend fun updateDeck(deck: Deck)
 
     @Delete
-     fun deleteDeck(deck: Deck)
+     suspend fun deleteDeck(deck: Deck)
 
     @Query("SELECT * FROM Deck")
-    fun getAllDecks(): Flow<List<Deck>>
+     fun getAllDecks(): Flow<List<Deck>>
 
     @Transaction
     @Query("SELECT * FROM Deck Where deckId = :deckId")
-    fun getDecksWithFlashcards(deckId: Long): Flow<List<DeckWithFlashcards>>
+     fun getDecksWithFlashcards(deckId: Int): Flow<List<DeckWithFlashcards>>
 
     @Transaction
     @Query("SELECT * FROM Deck ")
-    fun getDecksWithFlashcards(): Flow<List<DeckWithFlashcards>>
+     fun getDecksWithFlashcards(): Flow<List<DeckWithFlashcards>>
 }
