@@ -15,7 +15,7 @@ import com.example.flashcards.viewModel.FlashcardNavHost
 
 @Composable
 fun FlashcardApp(navController: NavHostController = rememberNavController()) {
-    FlashcardNavHost(navController)
+    FlashcardNavHost(navController = navController)
 
 }
 

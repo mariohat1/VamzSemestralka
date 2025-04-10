@@ -3,9 +3,9 @@ package com.example.flashcards.data.entities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "flashcard")
 data class Flashcard(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate =true)
     val flashcardId:Int,
     val deckId: Int,
     val question: String,

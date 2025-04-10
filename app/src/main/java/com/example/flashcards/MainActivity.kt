@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import com.example.flashcards.data.database.FlaschcardDatabase
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.data.repository.DeckRepository
@@ -23,28 +24,10 @@ import com.example.flashcards.viewModel.HomeScreenViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-
-
-        setContent {
+          setContent {
             FlashcardApp()
         }
     }
 }
 
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FlashCardsTheme {
-        Greeting("Android")
-    }
-}

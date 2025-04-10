@@ -29,7 +29,7 @@ class DeckRepository(private val deckDao: DeckDao) {
     }
 
 
-    fun getDecksWithFlashcards(deckId: Int): Flow<List<DeckWithFlashcards>> {
+    fun getDeckWithFlashcards(deckId: Int): Flow<List<DeckWithFlashcards>> {
         return deckDao.getDecksWithFlashcards(deckId)
     }
 

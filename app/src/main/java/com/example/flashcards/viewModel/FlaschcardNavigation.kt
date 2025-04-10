@@ -1,5 +1,6 @@
 package com.example.flashcards.viewModel
 
+import android.util.Log
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -28,18 +29,19 @@ fun FlashcardNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
+    val context = LocalContext.current.applicationContext
     val deckRepository = DeckRepository(FlaschcardDatabase.getDatabase(context).deckDao())
     val flashCardRepository = FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao())
+
     NavHost(
         navController = navController,
         startDestination = HomeDestination.route,
         modifier = modifier
-    ) { composable(route = HomeDestination.route) {
+    ) {     composable(route = HomeDestination.route) {
         HomeScreen(
             HomeScreenViewModel(deckRepository),
             modifier = Modifier,
-            navController = navController
+            navigateToUpdateScreen = {}
         )
         }
     }
