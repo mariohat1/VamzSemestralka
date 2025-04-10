@@ -5,5 +5,14 @@ import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
 
 data class UpdateDeckState(
-    val decks: List<Flashcard> = emptyList(),
+    val deck: DeckWithFlashcards = DeckWithFlashcards(
+        deck = Deck(
+            deckId = 0,
+            name = ""
+        ),
+        flashcards = emptyList()
+    )
+
 )
+
+

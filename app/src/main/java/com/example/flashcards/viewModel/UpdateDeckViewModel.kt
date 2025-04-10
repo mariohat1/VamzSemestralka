@@ -1,30 +1,54 @@
 package com.example.flashcards.viewModel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.flashcards.data.entities.DeckWithFlashcards
+import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.data.repository.DeckRepository
-import com.example.flashcards.data.states.HomeScreenState
+import com.example.flashcards.data.repository.FlashcardRepository
 import com.example.flashcards.data.states.UpdateDeckState
-import com.example.flashcards.viewModel.HomeScreenViewModel.Companion.TIMEOUT_MILLIS
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class UpdateDeckViewModel(private val deckRepository: DeckRepository) : ViewModel() {
+class UpdateDeckViewModel(
+    private val deckRepository: DeckRepository,
+    private val flashcardRepository: FlashcardRepository,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+    val deckId:Int = checkNotNull(savedStateHandle["deckId"])
 
-    val updateDeckState: StateFlow<HomeScreenState> = deckRepository.getDecksWithFlashcards(deckId = id)
-        .map { decks -> HomeScreenState(decks) }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            HomeScreenState()
+    val updateDeckState: StateFlow<UpdateDeckState> =
+        deckRepository.getDeck(deckId)
+            .map { deck -> UpdateDeckState(deck) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Lazily,
+                initialValue = UpdateDeckState()
+            )
+    suspend fun addFlashcardToDeckk(question:String, answer:String) {
+
+        flashcardRepository.insertFlashcard(Flashcard(
+            deckId = deckId,
+            question = question,
+            answer = answer
+        ))
+    }
+    suspend fun delete(flashcard: Flashcard) {
+        flashcardRepository.deleteFlashcard(flashcard)
+
+    }
+    suspend fun update(question:String, answer:String) {
+
+        flashcardRepository.updateFlashcard(
+            Flashcard(
+                deckId = deckId,
+                question = question,
+                answer = answer
+            )
         )
     }
+
+
 }

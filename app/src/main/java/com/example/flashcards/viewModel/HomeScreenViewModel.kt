@@ -23,21 +23,17 @@ class HomeScreenViewModel(private val deckRepository: DeckRepository) : ViewMode
         deckRepository.insertDeck(Deck(name = deckName))
     }
 
-    val homeScreenState: StateFlow<HomeScreenState> = deckRepository.getDecksWithFlashcards()
-        .map { decks -> HomeScreenState(decks) }
+    val homeScreenState: StateFlow<HomeScreenState> = deckRepository.getDeckWithFlashcards()
+        .map { it -> HomeScreenState(it) }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            SharingStarted.Lazily,
             HomeScreenState()
         )
 
-    fun getDeckWithFlashcards(deckId: Int): Flow<List<DeckWithFlashcards>> {
-        return deckRepository.getDeckWithFlashcards(deckId)
-    }
 
-    companion object {
-        private const val TIMEOUT_MILLIS = 5_000L
-    }
+
+
 
 
 }

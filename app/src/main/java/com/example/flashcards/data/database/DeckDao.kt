@@ -27,9 +27,9 @@ interface DeckDao {
 
     @Transaction
     @Query("SELECT * FROM Deck Where deckId = :deckId")
-     fun getDecksWithFlashcards(deckId: Int): Flow<List<DeckWithFlashcards>>
+     fun getDeck(deckId: Int): Flow<DeckWithFlashcards>
 
     @Transaction
     @Query("SELECT * FROM Deck ")
-     fun getDecksWithFlashcards(): Flow<List<DeckWithFlashcards>>
+     fun getDeckWithFlashcards(): Flow<List<DeckWithFlashcards>>
 }

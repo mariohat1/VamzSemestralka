@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "flashcard")
 data class Flashcard(
     @PrimaryKey(autoGenerate =true)
-    val flashcardId:Int,
+    val flashcardId:Int = 0,
     val deckId: Int,
     val question: String,
     val answer: String
