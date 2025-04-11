@@ -27,28 +27,7 @@ class UpdateDeckViewModel(
                 started = SharingStarted.Lazily,
                 initialValue = UpdateDeckState()
             )
-    suspend fun addFlashcardToDeckk(question:String, answer:String) {
 
-        flashcardRepository.insertFlashcard(Flashcard(
-            deckId = deckId,
-            question = question,
-            answer = answer
-        ))
-    }
-    suspend fun delete(flashcard: Flashcard) {
-        flashcardRepository.deleteFlashcard(flashcard)
-
-    }
-    suspend fun update(question:String, answer:String) {
-
-        flashcardRepository.updateFlashcard(
-            Flashcard(
-                deckId = deckId,
-                question = question,
-                answer = answer
-            )
-        )
-    }
 
 
 }

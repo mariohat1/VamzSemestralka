@@ -246,9 +246,6 @@ fun DeckItem(
             .clip(RoundedCornerShape(5.dp))
             .background(Color.Gray),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        )
     ) {
         Column(
             modifier = Modifier,

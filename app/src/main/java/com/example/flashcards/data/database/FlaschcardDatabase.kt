@@ -8,7 +8,7 @@ import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.Flashcard
 
 @Database(entities = [Deck::class, Flashcard::class],
-    version = 2)
+    version = 3)
 abstract class FlaschcardDatabase : RoomDatabase() {
     abstract fun flashcardDao(): FlashcardDao
     abstract fun deckDao(): DeckDao

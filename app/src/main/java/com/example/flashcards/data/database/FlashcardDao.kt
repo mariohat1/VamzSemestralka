@@ -24,4 +24,7 @@ interface FlashcardDao {
 
     @Query("SELECT * FROM Flashcard WHERE flashcardId = :flashcardId")
      fun getFlashcardById(flashcardId: Int): Flashcard
+
+    @Query("SELECT * FROM Flashcard WHERE deckId = :deckId")
+    fun getFlashcardsById(deckId: Int): Flow<List<Flashcard>>
 }
