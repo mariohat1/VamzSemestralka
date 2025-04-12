@@ -13,24 +13,33 @@ import kotlinx.coroutines.withContext
 class FlashcardRepository(private val  flashcardDao: FlashcardDao) {
 
    suspend fun insertFlashcard(flashcard: Flashcard) {
-       flashcardDao.insertFlashcard(flashcard)
+       withContext(Dispatchers.IO) {
+           flashcardDao.insertFlashcard(flashcard)
+       }
 
     }
 
 
     suspend fun deleteFlashcard(flashcard: Flashcard) {
-        flashcardDao.deleteFlashcard(flashcard)
+        withContext(Dispatchers.IO) {
+            flashcardDao.deleteFlashcard(flashcard)
+        }
     }
 
 
    suspend fun updateFlashcard(flashcard: Flashcard) {
-        flashcardDao.updateFlashcard(flashcard)
+       withContext(Dispatchers.IO) {
+           flashcardDao.updateFlashcard(flashcard)
+       }
     }
 
 
     fun getAllFlashcards(): Flow<List<Flashcard>> {
 
         return  flashcardDao.getAllFlashcards()
+    }
+    suspend fun deleteFlashcardsByDeckId(deckId: Int) {
+        flashcardDao.deleteFlashcardsByDeckId(deckId)
     }
 
 

@@ -11,26 +11,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
-import com.example.flashcards.data.entities.Flashcard
-import com.example.flashcards.data.states.EditFlashcardScreen
 import com.example.flashcards.viewModel.FlashcardEditViewModel
 import kotlinx.coroutines.launch
 
 object EditNavigation : NavigationDestination {
-    override val route = "edit/{deckId}/{flashcardId}"
+    override var route = "edit/{deckId}/{flashcardId}"
     override val titleRes = R.string.app_name
 }
 
@@ -41,7 +39,23 @@ fun FlashcardEditScreen(
     navigateBack: () -> Unit
 ) {
 
+    // Collect state using collectAsState
     val flashcardEditState by viewModel.flashcardScreenState.collectAsState()
+
+    // Handle nullable flashcard state
+    val flashcard = flashcardEditState.flashcard
+
+    // Use rememberSaveable only if the flashcard data is available
+    var questionText by rememberSaveable { mutableStateOf(flashcard.question) }
+    var answerText by rememberSaveable { mutableStateOf(flashcard.answer) }
+
+    // Once data is available, update the state values
+    LaunchedEffect(flashcard) {
+        flashcard.let {
+            questionText = it.question
+            answerText = it.answer
+        }
+    }
     Scaffold(
         topBar = {
             FlashcardTopAppBar(
@@ -56,7 +70,12 @@ fun FlashcardEditScreen(
     ) { innerPadding ->
         EditBody(
             innerPadding,
-            viewModel
+            viewModel,
+            question = questionText,
+            onQuestionChange = { questionText = it },
+            answer = answerText,
+            onAnswerChange = { answerText = it },
+            OnSave = navigateBack,
         )
 
     }
@@ -66,34 +85,29 @@ fun FlashcardEditScreen(
 @Composable
 private fun EditBody(
     innerPadding: PaddingValues,
-    viewModel: FlashcardEditViewModel
+    viewModel: FlashcardEditViewModel,
+    question: String,
+    onQuestionChange: (String) -> Unit,
+    answer: String,
+    onAnswerChange: (String) -> Unit,
+    OnSave: () -> Unit 
 
-) {
+    ) {
     val coroutineScope = rememberCoroutineScope()
-    var question by remember { mutableStateOf("") }
 
-    var answer by remember { mutableStateOf("") }
     Column(modifier = Modifier.padding(innerPadding)) {
-
         TextField(
             value = question,
-            onValueChange = {
-                question = it
-
-            },
+            onValueChange = onQuestionChange,
             label = { Text("Question") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
         TextField(
             value = answer,
-            onValueChange = {
-                answer = it
-
-            },
+            onValueChange = onAnswerChange,
             label = { Text("Answer") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -101,14 +115,15 @@ private fun EditBody(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                coroutineScope.launch {
-                    viewModel.saveFlashcard(question, answer)
 
+                coroutineScope.launch {
+                    viewModel.saveFlashcard(question = question, answer = answer)
                 }
+                OnSave()
+
             },
         ) {
             Text("Save")
         }
-
     }
 }

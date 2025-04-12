@@ -10,16 +10,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.flashcards.data.database.FlaschcardDatabase
+import com.example.flashcards.data.repository.DeckRepository
+import com.example.flashcards.data.repository.FlashcardRepository
 import com.example.flashcards.viewModel.FlashcardNavHost
 
 @Composable
 fun FlashcardApp(navController: NavHostController = rememberNavController()) {
-    FlashcardNavHost(navController = navController)
+    val context = LocalContext.current.applicationContext
+    val deckRepository = remember { DeckRepository(FlaschcardDatabase.getDatabase(context).deckDao()) }
+    val flashcardRepository = remember { FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao()) }
 
+    FlashcardNavHost(
+        navController = navController,
+        deckRepository = deckRepository,
+        flashcardRepository = flashcardRepository
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

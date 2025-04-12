@@ -55,6 +55,7 @@ import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
 
 import com.example.flashcards.viewModel.HomeScreenViewModel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 object HomeDestination : NavigationDestination {
@@ -68,10 +69,11 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     navigateToUpdateScreen: (Int) -> Unit,
 
-) {
+    ) {
     val homeScreenState by viewModel.homeScreenState.collectAsState()
     val isDialogOpen = remember { mutableStateOf(false) }
     val courutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             FlashcardTopAppBar(
@@ -107,14 +109,18 @@ fun HomeScreen(
             )
         }
 
-        HomeBody(
-            decks = homeScreenState.decks,
-            modifier = Modifier,
-            onItemClick = {
-            },
-            contentPadding = innerPadding,
-            navigateToUpdateScreen = navigateToUpdateScreen
-        )
+        if (!homeScreenState.isLoading) {
+            HomeBody(
+                decks = homeScreenState.decks,
+                modifier = Modifier,
+                onItemClick = {
+                },
+                contentPadding = innerPadding,
+                navigateToUpdateScreen = navigateToUpdateScreen,
+                viewModel = viewModel
+            )
+        }
+
 
     }
 
@@ -177,11 +183,14 @@ fun HomeBody(
     onItemClick: (Deck) -> Unit,
     navigateToUpdateScreen: (Int) -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    viewModel: HomeScreenViewModel
 
-    ) {
+) {
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
     ) {
+
         if (decks.isEmpty()) {
             Text(
                 text = "prazdnota",
@@ -203,17 +212,18 @@ fun HomeBody(
                         modifier = Modifier
                             .padding(dimensionResource(id = R.dimen.padding_small))
                             .clickable { onItemClick(item.deck) },
-                        navigateToUpdateScreen = navigateToUpdateScreen
-
+                        navigateToUpdateScreen = navigateToUpdateScreen,
+                        viewModel = viewModel
                     )
 
 
                 }
             }
-
         }
+
     }
 }
+
 
 @Preview
 @Composable
@@ -233,6 +243,7 @@ fun HomeBodyPreview() {
         onItemClick = {},
         navigateToUpdateScreen = TODO(),
         contentPadding = TODO(),
+        viewModel = TODO(),
     )
 }
 
@@ -242,8 +253,10 @@ fun DeckItem(
     item: DeckWithFlashcards,
     modifier: Modifier,
     navigateToUpdateScreen: (Int) -> Unit,
+    viewModel: HomeScreenViewModel
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -292,7 +305,11 @@ fun DeckItem(
                 )
                 DropdownMenuItem(
                     text = { Text("Delete") },
-                    onClick = { }
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.deleteDeck(item.deck)
+                        }
+                    }
                 )
             }
 

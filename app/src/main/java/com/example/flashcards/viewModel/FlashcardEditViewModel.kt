@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -29,9 +30,11 @@ class FlashcardEditViewModel(
     val flashcardScreenState: StateFlow<EditFlashcardScreen> = editFlashcardScreenState
 
     init {
-        if (flashcardId != 0) {
+
+        if (flashcardId != -1) {
             viewModelScope.launch {
                 flashcardRepository.getFlashcardById(flashcardId)
+                    .filterNotNull()
                     .combine(deckRepository.getDeck(deckId)) { flashcard, deck ->
                         EditFlashcardScreen(
                             flashcard = flashcard,
@@ -42,8 +45,12 @@ class FlashcardEditViewModel(
                     }
             }
         } else {
+
             viewModelScope.launch {
-                deckRepository.getDeck(deckId).collect { deck ->
+
+                deckRepository.getDeck(deckId).filterNotNull()
+                    .collect { deck ->
+                        Log.d("FlashcardEditViewModel", "New Flashcard - Deck: $deck")
                     editFlashcardScreenState.value = EditFlashcardScreen(
                         flashcard = Flashcard(
                             deckId = deckId,
@@ -60,7 +67,7 @@ class FlashcardEditViewModel(
     }
 
     suspend fun saveFlashcard(question: String, answer: String) {
-        if (flashcardId == 0) {
+        if (flashcardId == -1) {
             flashcardRepository.insertFlashcard(
                 Flashcard(deckId = deckId, question = question, answer = answer)
             )

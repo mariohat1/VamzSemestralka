@@ -10,8 +10,9 @@ data class UpdateDeckState(
             deckId = 0,
             name = ""
         ),
-        flashcards = emptyList()
-    )
+        flashcards = listOf()
+    ),
+    val isLoading :Boolean= true
 
 )
 

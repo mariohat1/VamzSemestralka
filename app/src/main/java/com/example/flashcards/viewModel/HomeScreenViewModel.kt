@@ -6,6 +6,7 @@ import com.example.flashcards.data.database.DeckDao
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.repository.DeckRepository
+import com.example.flashcards.data.repository.FlashcardRepository
 import com.example.flashcards.data.states.HomeScreenState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,18 +19,25 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeScreenViewModel(private val deckRepository: DeckRepository) : ViewModel(){
+class HomeScreenViewModel(private val deckRepository: DeckRepository,
+    private val flashcardRepository: FlashcardRepository) : ViewModel(){
+
     suspend fun insert(deckName: String) {
         deckRepository.insertDeck(Deck(name = deckName))
     }
 
     val homeScreenState: StateFlow<HomeScreenState> = deckRepository.getDeckWithFlashcards()
-        .map { it -> HomeScreenState(it) }
+        .map { it -> HomeScreenState(it,false) }
         .stateIn(
-            viewModelScope,
-            SharingStarted.Lazily,
-            HomeScreenState()
+            scope = viewModelScope,
+            started=SharingStarted.Eagerly,
+            initialValue = HomeScreenState()
         )
+    suspend fun deleteDeck(deck: Deck) {
+        flashcardRepository.deleteFlashcardsByDeckId(deck.deckId)
+        deckRepository.deleteDeck(deck)
+
+    }
 
 
 

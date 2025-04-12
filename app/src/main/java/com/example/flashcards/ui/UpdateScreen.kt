@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,10 +62,13 @@ fun UpdateScreen(
     viewModel: UpdateDeckViewModel,
     navigateToEditScreen: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    navigateToEditExistingEditScreen: (Int) -> Unit
+    
 ) {
     val isDialogOpen = remember { mutableStateOf(false) }
     val updateScreenState by viewModel.updateDeckState.collectAsState()
+
     Scaffold(
         topBar = {
             FlashcardTopAppBar(
@@ -95,13 +99,14 @@ fun UpdateScreen(
                 navigateToEditScreen = navigateToEditScreen,
             )
         }
-
-        UpdateBody(
-            modifier = modifier,
-            paddingValues = innerPadding,
-            flashcards = updateScreenState.deck.flashcards
-        )
-
+        if (!updateScreenState.isLoading) {
+            UpdateBody(
+                modifier = modifier,
+                paddingValues = innerPadding,
+                flashcards = updateScreenState.deck.flashcards,
+                navigateToEditExistingEditScreen = navigateToEditExistingEditScreen
+            )
+        }
     }
 
 
@@ -111,7 +116,8 @@ fun UpdateScreen(
 fun UpdateBody(
     paddingValues: PaddingValues,
     modifier: Modifier,
-    flashcards: List<Flashcard>
+    flashcards: List<Flashcard>,
+    navigateToEditExistingEditScreen: (Int) -> Unit
 ) {
     if (flashcards.isEmpty()) {
         Text(
@@ -132,9 +138,8 @@ fun UpdateBody(
             items(flashcards) { flashcard ->
                 FlashCardItem(
                     flashcard = flashcard,
-                    modifier = modifier
-
-
+                    modifier = modifier,
+                    navigateToEditExistingEditScreen = navigateToEditExistingEditScreen
                 )
             }
         }
@@ -182,7 +187,8 @@ fun FlashCardItemPreview() {
             question = "What is the capital of France?",
             answer = "Paris"
         ),
-        modifier = Modifier
+        modifier = Modifier,
+        navigateToEditExistingEditScreen = TODO()
     )
 }
 
@@ -191,6 +197,7 @@ fun FlashCardItemPreview() {
 fun FlashCardItem(
     flashcard: Flashcard,
     modifier: Modifier,
+    navigateToEditExistingEditScreen: (Int) -> Unit,
 
 ) {
     ElevatedCard(
@@ -200,7 +207,7 @@ fun FlashCardItem(
         modifier = modifier
             .fillMaxWidth()
             .background(Color.White),
-        onClick = {}
+        onClick ={ navigateToEditExistingEditScreen(flashcard.flashcardId)}
     ) {
         Text(
             text = flashcard.question,
@@ -224,7 +231,8 @@ fun UpdateBodyPreview() {
     UpdateBody(
         paddingValues = PaddingValues(16.dp),
         modifier = Modifier,
-        flashcards = sampleFlashcards
+        flashcards = sampleFlashcards,
+        navigateToEditExistingEditScreen = TODO()
     )
 }
 
