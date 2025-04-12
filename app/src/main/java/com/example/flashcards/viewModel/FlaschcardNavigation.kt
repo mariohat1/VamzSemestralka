@@ -19,6 +19,8 @@ import com.example.flashcards.ui.EditNavigation
 import com.example.flashcards.ui.FlashcardEditScreen
 import com.example.flashcards.ui.HomeDestination
 import com.example.flashcards.ui.HomeScreen
+import com.example.flashcards.ui.PlayDestination
+import com.example.flashcards.ui.PlayScreen
 import com.example.flashcards.ui.UpdateDestination
 import com.example.flashcards.ui.UpdateScreen
 
@@ -50,8 +52,10 @@ fun FlashcardNavHost(
                 navigateToUpdateScreen = { deckId ->
                     navController.navigate("update/$deckId")
                 },
-
-                )
+                navigateToPlayScreen = { deckId ->
+                    navController.navigate("play/$deckId")
+                }
+            )
         }
         composable(
             route = UpdateDestination.route, // Parametrizovaná routa s deckId
@@ -80,7 +84,7 @@ fun FlashcardNavHost(
             arguments = listOf(
                 navArgument("deckId") { type = NavType.IntType },
                 navArgument("flashcardId") { type = NavType.IntType }
-                )
+            )
         ) { backStackEntry ->
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
             val flashcardId = backStackEntry.arguments?.getInt("flashcardId") ?: return@composable
@@ -96,5 +100,23 @@ fun FlashcardNavHost(
                 navigateBack = { navController.popBackStack() }
             )
         }
+        composable(
+            route = PlayDestination.route,
+            arguments = listOf(
+                navArgument("deckId") { type = NavType.IntType },
+            )
+        ) { backStackEntry ->
+            val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
+            PlayScreen(
+                viewModel = PlayViewmodel(
+                    deckRepository = deckRepository,
+                    stateHandle = SavedStateHandle(mapOf("deckId" to deckId))
+                ),
+                navigateBack = {navController.popBackStack()},
+                modifier = modifier
+            )
+
+        }
+
     }
 }

@@ -35,7 +35,7 @@ class FlashcardEditViewModel(
             viewModelScope.launch {
                 flashcardRepository.getFlashcardById(flashcardId)
                     .filterNotNull()
-                    .combine(deckRepository.getDeck(deckId)) { flashcard, deck ->
+                    .combine(deckRepository.getDeck(deckId).filterNotNull()) { flashcard, deck ->
                         EditFlashcardScreen(
                             flashcard = flashcard,
                             deckTitle = deck.deck.name

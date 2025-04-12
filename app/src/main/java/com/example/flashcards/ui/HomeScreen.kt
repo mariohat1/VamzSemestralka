@@ -55,6 +55,7 @@ import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
 
 import com.example.flashcards.viewModel.HomeScreenViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -68,6 +69,7 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel,
     modifier: Modifier = Modifier,
     navigateToUpdateScreen: (Int) -> Unit,
+    navigateToPlayScreen: (Int) -> Unit,
 
     ) {
     val homeScreenState by viewModel.homeScreenState.collectAsState()
@@ -100,7 +102,7 @@ fun HomeScreen(
                 onDismiss = { isDialogOpen.value = false },
                 onSave = { deckName ->
 
-                    courutineScope.launch {
+                    courutineScope.launch(Dispatchers.IO) {
                         viewModel.insert(deckName)
                     }
 
@@ -113,8 +115,8 @@ fun HomeScreen(
             HomeBody(
                 decks = homeScreenState.decks,
                 modifier = Modifier,
-                onItemClick = {
-                },
+                onItemClick =  navigateToPlayScreen
+                ,
                 contentPadding = innerPadding,
                 navigateToUpdateScreen = navigateToUpdateScreen,
                 viewModel = viewModel
@@ -180,7 +182,7 @@ fun CreateDeckDialog(
 fun HomeBody(
     decks: List<DeckWithFlashcards>,
     modifier: Modifier,
-    onItemClick: (Deck) -> Unit,
+    onItemClick: (Int) -> Unit,
     navigateToUpdateScreen: (Int) -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: HomeScreenViewModel
@@ -211,7 +213,7 @@ fun HomeBody(
                         item = item,
                         modifier = Modifier
                             .padding(dimensionResource(id = R.dimen.padding_small))
-                            .clickable { onItemClick(item.deck) },
+                            .clickable { onItemClick(item.deck.deckId) },
                         navigateToUpdateScreen = navigateToUpdateScreen,
                         viewModel = viewModel
                     )
@@ -306,7 +308,7 @@ fun DeckItem(
                 DropdownMenuItem(
                     text = { Text("Delete") },
                     onClick = {
-                        coroutineScope.launch {
+                        coroutineScope.launch(Dispatchers.IO) {
                             viewModel.deleteDeck(item.deck)
                         }
                     }
