@@ -6,21 +6,24 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.flashcards.data.database.FlashcardDao
 import com.example.flashcards.data.entities.Flashcard
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class FlashcardRepository(private val  flashcardDao: FlashcardDao) {
 
-    fun insertFlashcard(flashcard: Flashcard) {
-        flashcardDao.insertFlashcard(flashcard)
+   suspend fun insertFlashcard(flashcard: Flashcard) {
+       flashcardDao.insertFlashcard(flashcard)
+
     }
 
 
-    fun deleteFlashcard(flashcard: Flashcard) {
+    suspend fun deleteFlashcard(flashcard: Flashcard) {
         flashcardDao.deleteFlashcard(flashcard)
     }
 
 
-    fun updateFlashcard(flashcard: Flashcard) {
+   suspend fun updateFlashcard(flashcard: Flashcard) {
         flashcardDao.updateFlashcard(flashcard)
     }
 
@@ -31,7 +34,7 @@ class FlashcardRepository(private val  flashcardDao: FlashcardDao) {
     }
 
 
-    fun getFlashcardById(flashcardId: Int): Flashcard {
+    fun getFlashcardById(flashcardId: Int): Flow<Flashcard> {
 
         return flashcardDao.getFlashcardById(flashcardId)
     }

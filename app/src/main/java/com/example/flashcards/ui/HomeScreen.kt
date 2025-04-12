@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
@@ -66,6 +67,7 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel,
     modifier: Modifier = Modifier,
     navigateToUpdateScreen: (Int) -> Unit,
+
 ) {
     val homeScreenState by viewModel.homeScreenState.collectAsState()
     val isDialogOpen = remember { mutableStateOf(false) }
@@ -76,6 +78,7 @@ fun HomeScreen(
                 title = stringResource(R.string.app_name),
                 canNavigateBack = false,
                 modifier = modifier,
+                navigateBack = { },
             )
 
 
@@ -190,9 +193,11 @@ fun HomeBody(
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 120.dp),
 
-                modifier = modifier.fillMaxSize(), contentPadding = contentPadding
+                modifier = modifier.fillMaxSize(),
+                contentPadding = contentPadding
             ) {
                 items(items = decks, key = { it.deck.deckId }) { item ->
+
                     DeckItem(
                         item = item,
                         modifier = Modifier

@@ -8,7 +8,10 @@ data class EditFlashcardScreen(
         deckId = 0,
         question = "",
         answer = ""
-    )
+    ),
+
+    val deckTitle: String = ""
+
 
 
 )

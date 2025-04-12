@@ -28,7 +28,7 @@ fun FlashcardTopAppBar(
     title: String,
     canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
-    navigateBack: () -> Unit = {}
+    navigateBack: () -> Unit
 ) {
     CenterAlignedTopAppBar(
         title = { Text(title) },

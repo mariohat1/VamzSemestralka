@@ -43,7 +43,8 @@ fun FlashcardNavHost(
                 modifier = Modifier,
                 navigateToUpdateScreen = { deckId ->
                     navController.navigate("update/$deckId")
-                }
+                },
+
             )
         }
         composable(
@@ -61,7 +62,8 @@ fun FlashcardNavHost(
                 modifier = Modifier,
                 navigateToEditScreen = { flashcardId ->
                     navController.navigate("edit/$deckId/$flashcardId")
-                }
+                },
+                navigateBack = {navController.popBackStack()}
             )
         }
         composable(
@@ -76,10 +78,13 @@ fun FlashcardNavHost(
             FlashcardEditScreen(
                 viewModel = FlashcardEditViewModel(
                     flashcardRepository = flashCardRepository,
+                    deckRepository = deckRepository,
                     savedStateHandle = SavedStateHandle(
                         mapOf("deckId" to deckId, "flashcardId" to flashcardId)
                     )
-                )
+                ),
+                modifier = Modifier,
+                navigateBack = {navController.popBackStack()}
             )
         }
     }
