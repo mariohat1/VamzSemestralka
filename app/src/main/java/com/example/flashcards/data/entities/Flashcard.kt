@@ -9,5 +9,6 @@ data class Flashcard(
     val flashcardId:Int = 0,
     val deckId: Int,
     val question: String,
-    val answer: String
+    val answer: String,
+    val isKnown: Boolean = false
 )

@@ -51,15 +51,15 @@ class FlashcardEditViewModel(
                 deckRepository.getDeck(deckId).filterNotNull()
                     .collect { deck ->
                         Log.d("FlashcardEditViewModel", "New Flashcard - Deck: $deck")
-                    editFlashcardScreenState.value = EditFlashcardScreen(
-                        flashcard = Flashcard(
-                            deckId = deckId,
-                            question = "",
-                            answer = ""
-                        ),
-                        deckTitle = deck.deck.name
-                    )
-                }
+                        editFlashcardScreenState.value = EditFlashcardScreen(
+                            flashcard = Flashcard(
+                                deckId = deckId,
+                                question = "",
+                                answer = ""
+                            ),
+                            deckTitle = deck.deck.name
+                        )
+                    }
             }
         }
 

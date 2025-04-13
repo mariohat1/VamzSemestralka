@@ -30,4 +30,10 @@ interface FlashcardDao {
 
     @Query("DELETE FROM flashcard WHERE deckId = :deckId")
     suspend fun deleteFlashcardsByDeckId(deckId: Int)
+
+    @Query("UPDATE flashcard SET isKnown = :isKnown WHERE flashcardId = :id")
+    suspend fun updateIsKnown(id: Int, isKnown: Boolean)
+
+    @Query("SELECT * FROM Flashcard WHERE deckId = :deckId AND isKnown = 0")
+    fun getUnknownFlashcardsByDeckId(deckId: Int): Flow<List<Flashcard>>
 }

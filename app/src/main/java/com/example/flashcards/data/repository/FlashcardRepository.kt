@@ -33,11 +33,17 @@ class FlashcardRepository(private val  flashcardDao: FlashcardDao) {
        }
     }
 
+    fun getUknownFlashcardsByDeckId(deckId: Int): Flow<List<Flashcard>> {
+        return flashcardDao.getUnknownFlashcardsByDeckId(deckId)
 
-    fun getAllFlashcards(): Flow<List<Flashcard>> {
-
-        return  flashcardDao.getAllFlashcards()
     }
+    suspend fun updateIsKnown(id: Int, isKnown: Boolean) {
+        withContext(Dispatchers.IO) {
+            flashcardDao.updateIsKnown(id, isKnown)
+        }
+    }
+
+
     suspend fun deleteFlashcardsByDeckId(deckId: Int) {
         flashcardDao.deleteFlashcardsByDeckId(deckId)
     }

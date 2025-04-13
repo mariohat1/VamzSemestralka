@@ -2,13 +2,10 @@ package com.example.flashcards.data.states
 
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
+import com.example.flashcards.data.entities.Flashcard
 
 data class PlayState(
-    val deck: DeckWithFlashcards = DeckWithFlashcards(
-        deck = Deck(
-            deckId = 0,
-            name = ""
-        ),
-        flashcards = listOf()
-    )
+    val flashcards:List<Flashcard> = listOf(),
+    val deckTitle:String = "",
+    val isLoading:Boolean = true
 )

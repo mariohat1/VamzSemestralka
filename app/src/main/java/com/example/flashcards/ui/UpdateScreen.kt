@@ -205,8 +205,8 @@ fun FlashCardItem(
             defaultElevation = 6.dp
         ),
         modifier = modifier
-            .fillMaxWidth()
-            .background(Color.White),
+            .fillMaxWidth(),
+
         onClick ={ navigateToEditExistingEditScreen(flashcard.flashcardId)}
     ) {
         Text(

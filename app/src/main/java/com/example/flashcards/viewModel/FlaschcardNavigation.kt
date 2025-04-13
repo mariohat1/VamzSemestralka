@@ -110,7 +110,8 @@ fun FlashcardNavHost(
             PlayScreen(
                 viewModel = PlayViewmodel(
                     deckRepository = deckRepository,
-                    stateHandle = SavedStateHandle(mapOf("deckId" to deckId))
+                    stateHandle = SavedStateHandle(mapOf("deckId" to deckId)),
+                    flashcardRepository = flashcardRepository
                 ),
                 navigateBack = {navController.popBackStack()},
                 modifier = modifier
