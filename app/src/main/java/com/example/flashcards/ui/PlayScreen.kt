@@ -6,15 +6,20 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
@@ -64,11 +70,13 @@ fun PlayScreen(
 
         },
     ) { innerPadding ->
+
         PlayScreenBody(
             innerPadding,
             flashcards = playState.flashcards,
             viewModel = viewModel,
         )
+
     }
 
 }
@@ -81,10 +89,10 @@ fun PlayScreenBody(
     modifier: Modifier = Modifier,
     viewModel: PlayViewmodel
 ) {
-    var currentIndex by remember { mutableIntStateOf(0) }
-    var isFlipped by remember { mutableStateOf(false) }
+    val currentIndex by viewModel.currentIndex.collectAsState()
+    val isFlipped by viewModel.isFlipped.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    var currentFlashcard = flashcards.getOrNull(currentIndex)
+    val currentFlashcard = flashcards.getOrNull(currentIndex)
 
     Column(
         modifier = Modifier
@@ -94,66 +102,60 @@ fun PlayScreenBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if (currentIndex >= flashcards.size && flashcards.isNotEmpty()) {
-            currentIndex = flashcards.size - 1
-        }
+
         Log.d("PlayScreenBody", "Current Index: $currentIndex")
         currentFlashcard?.let { card ->
+
             FlashcardCard(
                 currentFlashcard = card,
                 isFlipped = isFlipped,
-                onFlip = { isFlipped = !isFlipped }
+                onFlip = { viewModel.flip() }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-            val isKnown = card.isKnown
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(32.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center // Center the Known button
             ) {
+                // "Known" button, always centered
                 Button(
                     onClick = {
+                        viewModel.decreaseIndex()
                         coroutineScope.launch {
-                            viewModel.updateFlaschardStatus(
-                                id = card.flashcardId,
-                                isKnown = !card.isKnown
-                            )
+                            viewModel.updateFlaschardStatus(card.flashcardId, true)
                         }
-                    }) {
-                    Text(
-                        if (isKnown) "Mark as Unknown"
-                        else "Mark as Known"
-                    )
+
+                    },
+                ) {
+                    Text(text = "Known", maxLines = 1, softWrap = false)
+                }
+
+
+
+                if (currentIndex > 0) {
+                    Button(
+                        onClick = { viewModel.goToPreviousCard() },
+                        modifier = Modifier
+                            .absoluteOffset(x = (-120).dp)
+                    ) {
+                        Text("Previous")
+                    }
+                }
+
+                // "Next" button (conditionally displayed), positioned to the right
+                if (currentIndex < flashcards.size - 1) {
+                    Button(
+                        onClick = { viewModel.goToNextCard(flashcards.size) },
+                        modifier = Modifier
+                            .absoluteOffset(x = 120.dp) // Adjust as needed
+                    ) {
+                        Text("Next")
+                    }
                 }
             }
-
-
-            if (currentIndex > 0) {
-                Button(
-                    onClick = {
-                        currentIndex--
-                        isFlipped = false
-                    }) {
-                    Text("Previous")
-                }
-            }
-
-            if (currentIndex < flashcards.size - 1) {
-                Button(
-                    onClick = {
-                        currentIndex++
-                        isFlipped = false
-                    }) {
-                    Text("Next")
-                }
-            }
-
-
-        } ?: run {
-            Text("No flashcards available.")
-        }
+        } ?: Text("No flashcards available.")
     }
 }
 
@@ -170,36 +172,49 @@ fun FlashcardCard(
             targetValue = if (isFlipped) 180f else 0f,
             animationSpec = tween(500)
         )
-        Card(
-            modifier = modifier
-                .fillMaxWidth(0.8f)
-                .aspectRatio(1f)
-                .graphicsLayer {
-                    rotationX = rotation
-                    cameraDistance = 6f * density
-                }
-                .clickable(onClick = onFlip),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        BoxWithConstraints(modifier = modifier) {
+            val isPortrait = maxHeight > maxWidth
+            val cardWidth = if (isPortrait)  0.7f else  0.35f
+            val cardHeight = if (isPortrait) 0.35f else 0.7f
+
+            Card(
+                modifier = modifier
+                    .fillMaxWidth(cardWidth)
+                    .fillMaxHeight(cardHeight)
+                    .graphicsLayer {
+                        rotationX = rotation
+                        cameraDistance = 12f * density
+                    }
+                    .clickable(onClick = onFlip),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                if (rotation < 90f) {
-                    Text(
-                        text = card.question,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                } else {
-                    Text(
-                        text = card.answer,
-                        fontSize = 20.sp,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .graphicsLayer {
-                                rotationX = 180f
-                            })
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (rotation < 90f) {
+                        Text(
+                            text = card.question,
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    rotationX = 180f
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = card.answer,
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
