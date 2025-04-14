@@ -3,6 +3,7 @@ package com.example.flashcards.viewModel
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.data.repository.DeckRepository
@@ -96,4 +97,26 @@ class FlashcardEditViewModel(
     }
 
 
+}
+class FlashcardEditViewModelFactory(
+    private val flashcardRepository: FlashcardRepository,
+    private val deckRepository: DeckRepository,
+    private val deckId: Int,
+    private val flashcardId: Int
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(FlashcardEditViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return FlashcardEditViewModel(
+                flashcardRepository = flashcardRepository,
+                deckRepository = deckRepository,
+                savedStateHandle = SavedStateHandle().apply {
+                    set("deckId", deckId)
+                    set("flashcardId", flashcardId)
+                }
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }

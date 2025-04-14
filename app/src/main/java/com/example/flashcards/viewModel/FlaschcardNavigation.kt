@@ -46,9 +46,12 @@ fun FlashcardNavHost(
 
 
         composable(route = HomeDestination.route) {
-
+        val viewmodel : HomeScreenViewModel = viewModel(factory = HomeScreenViewModelFactory(
+            deckRepository = deckRepository,
+            flashcardRepository = flashcardRepository
+        ))
             HomeScreen(
-                HomeScreenViewModel(deckRepository, flashcardRepository),
+                viewModel = viewmodel,
                 modifier = Modifier,
                 navigateToUpdateScreen = { deckId ->
                     navController.navigate("update/$deckId")
@@ -64,13 +67,13 @@ fun FlashcardNavHost(
             arguments = listOf(navArgument("deckId") { type = NavType.IntType })
         ) { backStackEntry ->
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
-            Log.d("UpdateScreen", "Deck ID: $deckId")
+            val viewmodel: UpdateDeckViewModel = viewModel(factory = UpdateDeckViewModelFactory(
+                deckRepository = deckRepository,
+                flashcardRepository = flashcardRepository,
+                deckId = deckId
+            ))
             UpdateScreen(
-                viewModel = UpdateDeckViewModel(
-                    deckRepository = deckRepository,
-                    flashcardRepository = flashcardRepository,
-                    savedStateHandle = SavedStateHandle(mapOf("deckId" to deckId))
-                ),
+                viewModel = viewmodel,
                 modifier = Modifier,
                 navigateToEditScreen = { flashcardId ->
                     navController.navigate("edit/$deckId/$flashcardId")
@@ -92,14 +95,14 @@ fun FlashcardNavHost(
         ) { backStackEntry ->
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
             val flashcardId = backStackEntry.arguments?.getInt("flashcardId") ?: return@composable
+            val viewmodel: FlashcardEditViewModel = viewModel(factory = FlashcardEditViewModelFactory(
+                flashcardRepository = flashcardRepository,
+                deckRepository = deckRepository,
+                deckId = deckId,
+                flashcardId = flashcardId
+            ))
             FlashcardEditScreen(
-                viewModel = FlashcardEditViewModel(
-                    flashcardRepository = flashcardRepository,
-                    deckRepository = deckRepository,
-                    savedStateHandle = SavedStateHandle(
-                        mapOf("deckId" to deckId, "flashcardId" to flashcardId)
-                    )
-                ),
+                viewModel = viewmodel,
                 modifier = Modifier,
                 navigateBack = { navController.popBackStack() }
             )

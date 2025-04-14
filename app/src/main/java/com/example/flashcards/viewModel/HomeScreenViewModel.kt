@@ -1,6 +1,7 @@
 package com.example.flashcards.viewModel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.flashcards.data.database.DeckDao
 import com.example.flashcards.data.entities.Deck
@@ -19,20 +20,23 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class HomeScreenViewModel(private val deckRepository: DeckRepository,
-    private val flashcardRepository: FlashcardRepository) : ViewModel(){
+class HomeScreenViewModel(
+    private val deckRepository: DeckRepository,
+    private val flashcardRepository: FlashcardRepository
+) : ViewModel() {
 
     suspend fun insert(deckName: String) {
         deckRepository.insertDeck(Deck(name = deckName))
     }
 
     val homeScreenState: StateFlow<HomeScreenState> = deckRepository.getDeckWithFlashcards()
-        .map { it -> HomeScreenState(it,false) }
+        .map { it -> HomeScreenState(it, false) }
         .stateIn(
             scope = viewModelScope,
-            started=SharingStarted.Eagerly,
+            started = SharingStarted.Eagerly,
             initialValue = HomeScreenState()
         )
+
     suspend fun deleteDeck(deck: Deck) {
         flashcardRepository.deleteFlashcardsByDeckId(deck.deckId)
         deckRepository.deleteDeck(deck)
@@ -40,8 +44,20 @@ class HomeScreenViewModel(private val deckRepository: DeckRepository,
     }
 
 
+}
+class HomeScreenViewModelFactory(
+    private val deckRepository: DeckRepository,
+    private val flashcardRepository: FlashcardRepository
+) : ViewModelProvider.Factory {
 
-
-
-
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HomeScreenViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return HomeScreenViewModel(
+                deckRepository = deckRepository,
+                flashcardRepository = flashcardRepository
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }
