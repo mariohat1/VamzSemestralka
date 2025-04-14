@@ -27,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,6 +46,7 @@ import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.viewModel.PlayViewmodel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 object PlayDestination : NavigationDestination {
@@ -90,9 +92,12 @@ fun PlayScreenBody(
     viewModel: PlayViewmodel
 ) {
     val currentIndex by viewModel.currentIndex.collectAsState()
-    val isFlipped by viewModel.isFlipped.collectAsState()
+    var isFlipped  by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val currentFlashcard = flashcards.getOrNull(currentIndex)
+    LaunchedEffect(currentIndex) {
+        isFlipped = false
+    }
 
     Column(
         modifier = Modifier
@@ -109,7 +114,7 @@ fun PlayScreenBody(
             FlashcardCard(
                 currentFlashcard = card,
                 isFlipped = isFlipped,
-                onFlip = { viewModel.flip() }
+                onFlip = { isFlipped = !isFlipped }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -126,6 +131,7 @@ fun PlayScreenBody(
                         coroutineScope.launch {
                             viewModel.updateFlaschardStatus(card.flashcardId, true)
                         }
+
 
                     },
                 ) {
@@ -147,11 +153,13 @@ fun PlayScreenBody(
                 // "Next" button (conditionally displayed), positioned to the right
                 if (currentIndex < flashcards.size - 1) {
                     Button(
-                        onClick = { viewModel.goToNextCard(flashcards.size) },
+                        onClick = { viewModel.goToNextCard(flashcards.size)
+                                  },
                         modifier = Modifier
                             .absoluteOffset(x = 120.dp) // Adjust as needed
                     ) {
                         Text("Next")
+
                     }
                 }
             }

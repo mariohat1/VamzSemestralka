@@ -27,8 +27,6 @@ class PlayViewmodel(
     private val currentIndexF = MutableStateFlow(newIndex ?: 0)
     val currentIndex: StateFlow<Int> = currentIndexF.asStateFlow()
 
-    private val isFlippedF = MutableStateFlow(stateHandle.get<Boolean>("isFlipped") ?: false)
-    val isFlipped = isFlippedF.asStateFlow()
 
 
     val playState: StateFlow<PlayState> = flashcardRepository.getUknownFlashcardsByDeckId(deckId)
@@ -44,11 +42,6 @@ class PlayViewmodel(
             initialValue = PlayState()
         )
 
-    fun flip() {
-        isFlippedF.value = !isFlippedF.value
-        stateHandle["isFlipped"] = isFlippedF.value
-        Log.d("PlayViewModel", "flip() called - isFlipped saved: ${isFlippedF.value}")
-    }
 
     fun goToNextCard(size: Int) {
         if (currentIndexF.value < size - 1) {
@@ -61,7 +54,6 @@ class PlayViewmodel(
     fun goToPreviousCard() {
         if (currentIndexF.value > 0) {
             currentIndexF.value--
-            isFlippedF.value = false
             stateHandle["currentIndex"] = currentIndexF.value // Save currentIndex
             Log.d(
                 "PlayViewModel",
@@ -73,7 +65,6 @@ class PlayViewmodel(
     fun decreaseIndex() {
         if (currentIndexF.value == playState.value.flashcards.lastIndex && playState.value.flashcards.size > 1) {
             currentIndexF.value--
-            isFlippedF.value = false
             stateHandle["currentIndex"] = currentIndexF.value // Save currentIndex
             Log.d("PlayViewModel", "decreaseIndex() - currentIndex saved: ${currentIndexF.value}")
         }
