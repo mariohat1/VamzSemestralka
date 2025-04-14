@@ -1,5 +1,6 @@
 package com.example.flashcards.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +20,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.NavigationDestination
@@ -39,23 +39,37 @@ fun FlashcardEditScreen(
     navigateBack: () -> Unit
 ) {
 
-    // Collect state using collectAsState
+
     val flashcardEditState by viewModel.flashcardScreenState.collectAsState()
 
-    // Handle nullable flashcard state
+
     val flashcard = flashcardEditState.flashcard
+    Log.d("EditScreen", "flashcard received: $flashcard")
 
-    // Use rememberSaveable only if the flashcard data is available
-    var questionText by rememberSaveable { mutableStateOf(flashcard.question) }
-    var answerText by rememberSaveable { mutableStateOf(flashcard.answer) }
+    var questionText by rememberSaveable {
+        mutableStateOf(
+            flashcard.question
+        )
+    }
+    Log.d("EditScreen", "flashcard received: $questionText")
+    var answerText by rememberSaveable {
+        mutableStateOf(
+            flashcard.answer
+        )
 
-    // Once data is available, update the state values
+    }
+    Log.d("EditScreen", "flashcard received: $answerText")
+    var isEdited by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(flashcard) {
-        flashcard.let {
-            questionText = it.question
-            answerText = it.answer
+        // Set initial values only if not already edited
+        if (!isEdited && !flashcardEditState.isLoading) {
+            questionText = flashcard.question
+            answerText = flashcard.answer
+            isEdited = true
         }
     }
+
+
     Scaffold(
         topBar = {
             FlashcardTopAppBar(
@@ -75,7 +89,7 @@ fun FlashcardEditScreen(
             onQuestionChange = { questionText = it },
             answer = answerText,
             onAnswerChange = { answerText = it },
-            OnSave = navigateBack,
+            onSave = navigateBack,
         )
 
     }
@@ -90,9 +104,9 @@ private fun EditBody(
     onQuestionChange: (String) -> Unit,
     answer: String,
     onAnswerChange: (String) -> Unit,
-    OnSave: () -> Unit 
+    onSave: () -> Unit
 
-    ) {
+) {
     val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = Modifier.padding(innerPadding)) {
@@ -119,7 +133,7 @@ private fun EditBody(
                 coroutineScope.launch {
                     viewModel.saveFlashcard(question = question, answer = answer)
                 }
-                OnSave()
+                onSave()
 
             },
         ) {

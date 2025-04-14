@@ -9,7 +9,7 @@ data class EditFlashcardScreen(
         question = "",
         answer = ""
     ),
-
+    val isLoading: Boolean = true,
     val deckTitle: String = ""
 
 

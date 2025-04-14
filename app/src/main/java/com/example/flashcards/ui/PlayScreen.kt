@@ -117,9 +117,9 @@ fun PlayScreenBody(
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center // Center the Known button
+                contentAlignment = Alignment.Center
             ) {
-                // "Known" button, always centered
+
                 Button(
                     onClick = {
                         viewModel.decreaseIndex()
