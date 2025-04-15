@@ -43,6 +43,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -77,6 +79,7 @@ fun HomeScreen(
     val courutineScope = rememberCoroutineScope()
 
     Scaffold(
+
         topBar = {
             FlashcardTopAppBar(
                 title = stringResource(R.string.app_name),
@@ -95,7 +98,7 @@ fun HomeScreen(
                 Icon(Icons.Default.Add, contentDescription = "Add Deck")
             }
         },
-    ) { innerPadding ->
+    ) { contentPadding ->
 
         if (isDialogOpen.value) {
             CreateDeckDialog(
@@ -115,9 +118,8 @@ fun HomeScreen(
             HomeBody(
                 decks = homeScreenState.decks,
                 modifier = Modifier,
-                onItemClick =  navigateToPlayScreen
-                ,
-                contentPadding = innerPadding,
+                onItemClick = navigateToPlayScreen,
+                contentPadding = contentPadding,
                 navigateToUpdateScreen = navigateToUpdateScreen,
                 viewModel = viewModel
             )
@@ -189,39 +191,38 @@ fun HomeBody(
 
 ) {
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
-    ) {
 
-        if (decks.isEmpty()) {
-            Text(
-                text = "prazdnota",
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(contentPadding),
-            )
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 120.dp),
+    if (decks.isEmpty()) {
+        Text(
+            text = "prazdnota",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(contentPadding),
+        )
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 200.dp),
+            modifier = modifier.fillMaxSize(),
+            contentPadding = contentPadding,
+            userScrollEnabled = true
+        ) {
+            items(items = decks, key = { it.deck.deckId }) { item ->
 
-                modifier = modifier.fillMaxSize(),
-                contentPadding = contentPadding
-            ) {
-                items(items = decks, key = { it.deck.deckId }) { item ->
+                DeckItem(
+                    item = item,
+                    modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_small))
+                        .fillMaxWidth()
 
-                    DeckItem(
-                        item = item,
-                        modifier = Modifier
-                            .padding(dimensionResource(id = R.dimen.padding_small))
-                            .clickable { onItemClick(item.deck.deckId) },
-                        navigateToUpdateScreen = navigateToUpdateScreen,
-                        viewModel = viewModel
-                    )
+                        .clickable { onItemClick(item.deck.deckId) },
+                    navigateToUpdateScreen = navigateToUpdateScreen,
+                    viewModel = viewModel
+                )
 
 
-                }
             }
         }
+
 
     }
 }
@@ -262,31 +263,38 @@ fun DeckItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(5.dp))
-            .background(Color.Gray),
+            .aspectRatio(1f),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(
-            modifier = Modifier,
+            modifier = Modifier
+                .background(Color(0xFFB0E2FF)),
             horizontalAlignment = Alignment.CenterHorizontally,
 
             ) {
             Text(
                 text = item.deck.name,
                 Modifier
-                    .background(Color.LightGray)
+                    .background(Color(0xFFB0E2FF))
                     .fillMaxWidth(),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = FontFamily.SansSerif
+                ),
                 textAlign = TextAlign.Center
             )
             Text(
+                modifier = Modifier
+                    .background(Color(0xFFB0E2FF))
+                    .padding(4.dp),
                 text = " terms: ${item.flashcards.size}",
+                style = MaterialTheme.typography.titleMedium
             )
 
         }
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFE6F3FF)),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Bottom,
 

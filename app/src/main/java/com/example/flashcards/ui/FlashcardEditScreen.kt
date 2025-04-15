@@ -44,7 +44,7 @@ fun FlashcardEditScreen(
 
 
     val flashcard = flashcardEditState.flashcard
-    Log.d("EditScreen", "flashcard received: $flashcard")
+
 
     var questionText by rememberSaveable {
         mutableStateOf(
@@ -61,7 +61,7 @@ fun FlashcardEditScreen(
     Log.d("EditScreen", "flashcard received: $answerText")
     var isEdited by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(flashcard) {
-        // Set initial values only if not already edited
+
         if (!isEdited && !flashcardEditState.isLoading) {
             questionText = flashcard.question
             answerText = flashcard.answer
@@ -109,12 +109,15 @@ private fun EditBody(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.padding(innerPadding)) {
+    Column(modifier = Modifier
+        .padding(innerPadding)
+        .padding(16.dp)) {
         TextField(
             value = question,
             onValueChange = onQuestionChange,
             label = { Text("Question") },
             modifier = Modifier.fillMaxWidth()
+
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -123,19 +126,21 @@ private fun EditBody(
             value = answer,
             onValueChange = onAnswerChange,
             label = { Text("Answer") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().
+            height(150.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-
-                coroutineScope.launch {
-                    viewModel.saveFlashcard(question = question, answer = answer)
+                if (question.isNotBlank() && answer.isNotBlank()) {
+                    coroutineScope.launch {
+                        viewModel.saveFlashcard(question = question, answer = answer)
+                    }
+                    onSave()
                 }
-                onSave()
-
             },
+            enabled = question.isNotBlank() && answer.isNotBlank(),
         ) {
             Text("Save")
         }

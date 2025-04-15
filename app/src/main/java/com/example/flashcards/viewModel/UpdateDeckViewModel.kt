@@ -32,13 +32,22 @@ class UpdateDeckViewModel(
                 initialValue = UpdateDeckState()
             )
 
+    suspend fun deleteFlashcard(flashcard: Flashcard) {
+        flashcardRepository.deleteFlashcard(flashcard)
+    }
+
+    suspend fun updateFlashcardStatus(id: Int, isKnown: Boolean) {
+        flashcardRepository.updateIsKnown(id, isKnown)
+
+    }
+
 
 }
 
 class UpdateDeckViewModelFactory(
     private val deckRepository: DeckRepository,
     private val flashcardRepository: FlashcardRepository,
-    private val deckId: Int  // Pass deckId here
+    private val deckId: Int
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -48,7 +57,7 @@ class UpdateDeckViewModelFactory(
                 deckRepository = deckRepository,
                 flashcardRepository = flashcardRepository,
                 savedStateHandle = SavedStateHandle().apply {
-                    set("deckId", deckId) // Set deckId in SavedStateHandle
+                    set("deckId", deckId)
                 }
             ) as T
         }

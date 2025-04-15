@@ -150,13 +150,13 @@ fun PlayScreenBody(
                     }
                 }
 
-                // "Next" button (conditionally displayed), positioned to the right
+
                 if (currentIndex < flashcards.size - 1) {
                     Button(
                         onClick = { viewModel.goToNextCard(flashcards.size)
                                   },
                         modifier = Modifier
-                            .absoluteOffset(x = 120.dp) // Adjust as needed
+                            .absoluteOffset(x = 120.dp)
                     ) {
                         Text("Next")
 

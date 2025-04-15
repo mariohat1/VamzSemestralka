@@ -46,7 +46,7 @@ class PlayViewmodel(
     fun goToNextCard(size: Int) {
         if (currentIndexF.value < size - 1) {
             currentIndexF.value++
-            stateHandle["currentIndex"] = currentIndexF.value // Save currentIndex
+            stateHandle["currentIndex"] = currentIndexF.value
             Log.d("PlayViewModel", "goToNextCard() - currentIndex saved: ${currentIndexF.value}")
         }
     }
@@ -54,7 +54,7 @@ class PlayViewmodel(
     fun goToPreviousCard() {
         if (currentIndexF.value > 0) {
             currentIndexF.value--
-            stateHandle["currentIndex"] = currentIndexF.value // Save currentIndex
+            stateHandle["currentIndex"] = currentIndexF.value
             Log.d(
                 "PlayViewModel",
                 "goToPreviousCard() - currentIndex saved: ${currentIndexF.value}"
@@ -65,7 +65,7 @@ class PlayViewmodel(
     fun decreaseIndex() {
         if (currentIndexF.value == playState.value.flashcards.lastIndex && playState.value.flashcards.size > 1) {
             currentIndexF.value--
-            stateHandle["currentIndex"] = currentIndexF.value // Save currentIndex
+            stateHandle["currentIndex"] = currentIndexF.value
             Log.d("PlayViewModel", "decreaseIndex() - currentIndex saved: ${currentIndexF.value}")
         }
     }
