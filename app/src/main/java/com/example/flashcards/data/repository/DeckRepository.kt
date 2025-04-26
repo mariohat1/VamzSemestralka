@@ -11,7 +11,7 @@ class DeckRepository(private val deckDao: DeckDao) {
 
     suspend fun insertDeck(deck: Deck){
         withContext(Dispatchers.IO) {
-            deckDao.insertDeck(deck);
+            deckDao.insertDeck(deck)
         }
 
     }

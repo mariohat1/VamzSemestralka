@@ -2,8 +2,9 @@ package com.example.flashcards
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.Icons.Filled
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,8 +30,8 @@ import com.example.flashcards.viewModel.FlashcardNavHost
 @Composable
 fun FlashcardApp(navController: NavHostController = rememberNavController()) {
     val context = LocalContext.current.applicationContext
-    val deckRepository = remember { DeckRepository(FlaschcardDatabase.getDatabase(context).deckDao()) }
-    val flashcardRepository = remember { FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao()) }
+    val deckRepository = DeckRepository(FlaschcardDatabase.getDatabase(context).deckDao())
+    val flashcardRepository = FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao())
 
     FlashcardNavHost(
         navController = navController,
@@ -56,7 +57,7 @@ fun FlashcardTopAppBar(
             if (canNavigateBack) {
                 IconButton(onClick = navigateBack) {
                     Icon(
-                        imageVector = Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription =  "back",
                     )
                 }

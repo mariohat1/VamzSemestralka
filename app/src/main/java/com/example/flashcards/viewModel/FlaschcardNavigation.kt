@@ -35,8 +35,6 @@ fun FlashcardNavHost(
     modifier: Modifier = Modifier,
 ) {
 
-    val context = LocalContext.current.applicationContext
-
 
     NavHost(
         navController = navController,
@@ -46,10 +44,12 @@ fun FlashcardNavHost(
 
 
         composable(route = HomeDestination.route) {
-        val viewmodel : HomeScreenViewModel = viewModel(factory = HomeScreenViewModelFactory(
-            deckRepository = deckRepository,
-            flashcardRepository = flashcardRepository
-        ))
+        val viewmodel = remember {
+            HomeScreenViewModel(
+                deckRepository = deckRepository,
+                flashcardRepository = flashcardRepository
+            )
+        }
             HomeScreen(
                 viewModel = viewmodel,
                 modifier = Modifier,
@@ -67,11 +67,14 @@ fun FlashcardNavHost(
             arguments = listOf(navArgument("deckId") { type = NavType.IntType })
         ) { backStackEntry ->
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
-            val viewmodel: UpdateDeckViewModel = viewModel(factory = UpdateDeckViewModelFactory(
-                deckRepository = deckRepository,
-                flashcardRepository = flashcardRepository,
-                deckId = deckId
-            ))
+            val viewmodel = remember(deckId) {
+                UpdateDeckViewModel(
+                    deckRepository = deckRepository,
+                    flashcardRepository = flashcardRepository,
+                    savedStateHandle = SavedStateHandle(mapOf("deckId" to deckId))
+                )
+            }
+            Log.d("Navigation", "Vykonavam composable pre UpdateeDeck s deckId: ${backStackEntry.arguments?.getInt("deckId")}")
             UpdateScreen(
                 viewModel = viewmodel,
                 modifier = Modifier,
@@ -93,14 +96,14 @@ fun FlashcardNavHost(
                 navArgument("flashcardId") { type = NavType.IntType }
             )
         ) { backStackEntry ->
+
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
             val flashcardId = backStackEntry.arguments?.getInt("flashcardId") ?: return@composable
-            val viewmodel: FlashcardEditViewModel = viewModel(factory = FlashcardEditViewModelFactory(
+            val viewmodel = FlashcardEditViewModel(
                 flashcardRepository = flashcardRepository,
                 deckRepository = deckRepository,
-                deckId = deckId,
-                flashcardId = flashcardId
-            ))
+                savedStateHandle = SavedStateHandle(mapOf("deckId" to deckId, "flashcardId" to flashcardId))
+            )
             FlashcardEditScreen(
                 viewModel = viewmodel,
                 modifier = Modifier,
@@ -114,20 +117,20 @@ fun FlashcardNavHost(
 
                 )
         ) { backStackEntry ->
+            Log.d("Navigation", "Vykonavam composable pre PlayDestination s deckId: ${backStackEntry.arguments?.getInt("deckId")}")
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
-            val viewModel: PlayViewmodel = viewModel(
-                factory = PlayViewModelFactory(
+            val viewModel = remember(deckId) {
+                PlayViewmodel(
                     deckRepository = deckRepository,
                     flashcardRepository = flashcardRepository,
-                    deckId = deckId
+                    stateHandle = SavedStateHandle(mapOf("deckId" to deckId))
                 )
-            )
+            }
 
             PlayScreen(
                 viewModel = viewModel,
-                navigateBack = { navController.navigate(HomeDestination.route) {
-                    popUpTo(HomeDestination.route) { inclusive = true }
-                } },
+                navigateBack = { navController.popBackStack()
+                 },
                 modifier = modifier
             )
 

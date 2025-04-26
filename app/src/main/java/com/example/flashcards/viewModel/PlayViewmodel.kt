@@ -11,9 +11,14 @@ import com.example.flashcards.data.states.PlayState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 
@@ -23,52 +28,38 @@ class PlayViewmodel(
     private val stateHandle: SavedStateHandle
 ) : ViewModel() {
     private val deckId: Int = checkNotNull(stateHandle["deckId"])
-    private val newIndex = stateHandle.get<Int>("currentIndex")
-    private val currentIndexF = MutableStateFlow(newIndex ?: 0)
-    val currentIndex: StateFlow<Int> = currentIndexF.asStateFlow()
 
 
+    init {
+        Log.d("PlayViewModel", "Inicializujem PlayViewModel pre deckId: $deckId")
+    }
+
+    private val deckTitleFlow = deckRepository.getDeck(deckId)
+        .filterNotNull()
+        .map { it.deck.name }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Lazily,
+            initialValue = ""
+        )
 
     val playState: StateFlow<PlayState> = flashcardRepository.getUknownFlashcardsByDeckId(deckId)
         .filterNotNull()
-        .combine(deckRepository.getDeck(deckId).filterNotNull()) { flashcards, deck ->
+        .combine(deckTitleFlow) { flashcards, deckTitle ->
             PlayState(
                 flashcards = flashcards,
-                deckTitle = deck.deck.name,
+                deckTitle = deckTitle,
+                isLoading = false
             )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
+        }.distinctUntilChanged()
+            .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
             initialValue = PlayState()
         )
 
 
-    fun goToNextCard(size: Int) {
-        if (currentIndexF.value < size - 1) {
-            currentIndexF.value++
-            stateHandle["currentIndex"] = currentIndexF.value
-            Log.d("PlayViewModel", "goToNextCard() - currentIndex saved: ${currentIndexF.value}")
-        }
-    }
 
-    fun goToPreviousCard() {
-        if (currentIndexF.value > 0) {
-            currentIndexF.value--
-            stateHandle["currentIndex"] = currentIndexF.value
-            Log.d(
-                "PlayViewModel",
-                "goToPreviousCard() - currentIndex saved: ${currentIndexF.value}"
-            )
-        }
-    }
-
-    fun decreaseIndex() {
-        if (currentIndexF.value == playState.value.flashcards.lastIndex && playState.value.flashcards.size > 1) {
-            currentIndexF.value--
-            stateHandle["currentIndex"] = currentIndexF.value
-            Log.d("PlayViewModel", "decreaseIndex() - currentIndex saved: ${currentIndexF.value}")
-        }
-    }
 
 
     suspend fun updateFlaschardStatus(id: Int, isKnown: Boolean) {
@@ -77,22 +68,3 @@ class PlayViewmodel(
     }
 }
 
-class PlayViewModelFactory(
-    private val deckRepository: DeckRepository,
-    private val flashcardRepository: FlashcardRepository,
-    private val deckId: Int,
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(PlayViewmodel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return PlayViewmodel(
-                deckRepository,
-                flashcardRepository,
-                SavedStateHandle().apply {
-                    set("deckId", deckId)
-                }
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}

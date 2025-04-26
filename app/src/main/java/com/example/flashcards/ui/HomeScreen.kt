@@ -1,5 +1,6 @@
 package com.example.flashcards.ui
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
@@ -39,26 +39,23 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
+import com.example.flashcards.ui.theme.LightSkyBlue
+import com.example.flashcards.ui.theme.LightBlue
 
 import com.example.flashcards.viewModel.HomeScreenViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 object HomeDestination : NavigationDestination {
@@ -74,9 +71,10 @@ fun HomeScreen(
     navigateToPlayScreen: (Int) -> Unit,
 
     ) {
+    Log.d("HomeScreen", "Recomposed")
     val homeScreenState by viewModel.homeScreenState.collectAsState()
     val isDialogOpen = remember { mutableStateOf(false) }
-    val courutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
 
@@ -105,7 +103,7 @@ fun HomeScreen(
                 onDismiss = { isDialogOpen.value = false },
                 onSave = { deckName ->
 
-                    courutineScope.launch(Dispatchers.IO) {
+                    coroutineScope.launch {
                         viewModel.insert(deckName)
                     }
 
@@ -115,6 +113,7 @@ fun HomeScreen(
         }
 
         if (!homeScreenState.isLoading) {
+
             HomeBody(
                 decks = homeScreenState.decks,
                 modifier = Modifier,
@@ -206,6 +205,7 @@ fun HomeBody(
             contentPadding = contentPadding,
             userScrollEnabled = true
         ) {
+
             items(items = decks, key = { it.deck.deckId }) { item ->
 
                 DeckItem(
@@ -214,7 +214,9 @@ fun HomeBody(
                         .padding(dimensionResource(id = R.dimen.padding_small))
                         .fillMaxWidth()
 
-                        .clickable { onItemClick(item.deck.deckId) },
+                        .clickable {
+                            Log.d("Navigation", "Spúšťam navigáciu na PlayScreen s deckId: ${item.deck.deckId}")
+                            onItemClick(item.deck.deckId) },
                     navigateToUpdateScreen = navigateToUpdateScreen,
                     viewModel = viewModel
                 )
@@ -262,20 +264,22 @@ fun DeckItem(
     val coroutineScope = rememberCoroutineScope()
     Card(
         modifier = modifier
+
+
             .fillMaxWidth()
             .aspectRatio(1f),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(
             modifier = Modifier
-                .background(Color(0xFFB0E2FF)),
+                .background(LightSkyBlue),
             horizontalAlignment = Alignment.CenterHorizontally,
 
             ) {
             Text(
                 text = item.deck.name,
                 Modifier
-                    .background(Color(0xFFB0E2FF))
+                    .background(LightSkyBlue)
                     .fillMaxWidth(),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontFamily = FontFamily.SansSerif
@@ -284,8 +288,7 @@ fun DeckItem(
             )
             Text(
                 modifier = Modifier
-                    .background(Color(0xFFB0E2FF))
-                    .padding(4.dp),
+                    .background(LightSkyBlue),
                 text = " terms: ${item.flashcards.size}",
                 style = MaterialTheme.typography.titleMedium
             )
@@ -294,7 +297,7 @@ fun DeckItem(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE6F3FF)),
+                .background(LightBlue),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.Bottom,
 

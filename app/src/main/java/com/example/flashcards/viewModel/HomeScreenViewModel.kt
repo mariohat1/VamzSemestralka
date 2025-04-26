@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -44,20 +45,4 @@ class HomeScreenViewModel(
     }
 
 
-}
-class HomeScreenViewModelFactory(
-    private val deckRepository: DeckRepository,
-    private val flashcardRepository: FlashcardRepository
-) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(HomeScreenViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return HomeScreenViewModel(
-                deckRepository = deckRepository,
-                flashcardRepository = flashcardRepository
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
 }

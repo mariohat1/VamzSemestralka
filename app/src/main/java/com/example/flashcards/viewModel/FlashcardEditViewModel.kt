@@ -23,11 +23,7 @@ class FlashcardEditViewModel(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val deckId: Int = checkNotNull(savedStateHandle["deckId"])
-    private val answerTextF = MutableStateFlow(savedStateHandle.get<String>("answer")?:"")
-    val answerText: StateFlow<String> = answerTextF.asStateFlow()
 
-    private val questionTextF = MutableStateFlow(savedStateHandle.get<String>("question")?:"")
-    val questionText: StateFlow<String> = questionTextF.asStateFlow()
 
     private val flashcardId: Int = checkNotNull(savedStateHandle["flashcardId"])
     private val editFlashcardScreenState = MutableStateFlow(EditFlashcardScreen())
@@ -46,7 +42,7 @@ class FlashcardEditViewModel(
                             deckTitle = deck.deck.name,
                             isLoading = false
                         )
-                    }.collect { screenState ->
+                    }.filterNotNull().collect { screenState ->
                         Log.d("EditVM", "Emitting screenState: ${screenState.flashcard}") // Add this log
                         editFlashcardScreenState.value = screenState
                     }
@@ -97,26 +93,4 @@ class FlashcardEditViewModel(
     }
 
 
-}
-class FlashcardEditViewModelFactory(
-    private val flashcardRepository: FlashcardRepository,
-    private val deckRepository: DeckRepository,
-    private val deckId: Int,
-    private val flashcardId: Int
-) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(FlashcardEditViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return FlashcardEditViewModel(
-                flashcardRepository = flashcardRepository,
-                deckRepository = deckRepository,
-                savedStateHandle = SavedStateHandle().apply {
-                    set("deckId", deckId)
-                    set("flashcardId", flashcardId)
-                }
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
 }

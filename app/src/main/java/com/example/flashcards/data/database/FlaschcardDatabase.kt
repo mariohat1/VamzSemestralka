@@ -8,7 +8,7 @@ import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.Flashcard
 
 @Database(entities = [Deck::class, Flashcard::class],
-    version = 4)
+    version = 5)
 abstract class FlaschcardDatabase : RoomDatabase() {
     abstract fun flashcardDao(): FlashcardDao
     abstract fun deckDao(): DeckDao
@@ -19,7 +19,6 @@ abstract class FlaschcardDatabase : RoomDatabase() {
         private var Instance: FlaschcardDatabase? = null
 
         fun getDatabase(context: Context): FlaschcardDatabase {
-            // if the Instance is not null, return it, otherwise create a new database instance.
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(context,
                     FlaschcardDatabase::class.java,

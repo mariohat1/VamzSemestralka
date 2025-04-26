@@ -44,23 +44,3 @@ class UpdateDeckViewModel(
 
 }
 
-class UpdateDeckViewModelFactory(
-    private val deckRepository: DeckRepository,
-    private val flashcardRepository: FlashcardRepository,
-    private val deckId: Int
-) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(UpdateDeckViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return UpdateDeckViewModel(
-                deckRepository = deckRepository,
-                flashcardRepository = flashcardRepository,
-                savedStateHandle = SavedStateHandle().apply {
-                    set("deckId", deckId)
-                }
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
