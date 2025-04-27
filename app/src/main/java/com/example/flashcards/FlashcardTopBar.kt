@@ -30,8 +30,12 @@ import com.example.flashcards.viewModel.FlashcardNavHost
 @Composable
 fun FlashcardApp(navController: NavHostController = rememberNavController()) {
     val context = LocalContext.current.applicationContext
-    val deckRepository = DeckRepository(FlaschcardDatabase.getDatabase(context).deckDao())
-    val flashcardRepository = FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao())
+    val deckRepository = remember {
+        DeckRepository(
+            FlaschcardDatabase.getDatabase(context).deckDao()
+        )
+    }
+    val flashcardRepository =remember { FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao()) }
 
     FlashcardNavHost(
         navController = navController,

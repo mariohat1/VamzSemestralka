@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.data.repository.DeckRepository
 import com.example.flashcards.data.repository.FlashcardRepository
@@ -24,7 +25,7 @@ class UpdateDeckViewModel(
     val updateDeckState: StateFlow<UpdateDeckState> =
         deckRepository.getDeck(deckId)
             .filterNotNull()
-            .map { deck -> UpdateDeckState(deck,false) }
+            .map { deck -> UpdateDeckState(deck, false) }
 
             .stateIn(
                 scope = viewModelScope,
@@ -39,6 +40,10 @@ class UpdateDeckViewModel(
     suspend fun updateFlashcardStatus(id: Int, isKnown: Boolean) {
         flashcardRepository.updateIsKnown(id, isKnown)
 
+    }
+
+    suspend fun updateDeckName(name: String) {
+        deckRepository.updateDeck(Deck(deckId, name))
     }
 
 

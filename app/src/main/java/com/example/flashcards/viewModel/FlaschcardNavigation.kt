@@ -99,11 +99,11 @@ fun FlashcardNavHost(
 
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
             val flashcardId = backStackEntry.arguments?.getInt("flashcardId") ?: return@composable
-            val viewmodel = FlashcardEditViewModel(
+            val viewmodel = remember(deckId, flashcardId) { FlashcardEditViewModel(
                 flashcardRepository = flashcardRepository,
                 deckRepository = deckRepository,
                 savedStateHandle = SavedStateHandle(mapOf("deckId" to deckId, "flashcardId" to flashcardId))
-            )
+            ) }
             FlashcardEditScreen(
                 viewModel = viewmodel,
                 modifier = Modifier,

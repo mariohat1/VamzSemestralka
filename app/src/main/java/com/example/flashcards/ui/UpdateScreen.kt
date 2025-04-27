@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,12 +38,14 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,7 @@ import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.viewModel.UpdateDeckViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
 
@@ -77,10 +82,17 @@ fun UpdateScreen(
     navigateToEditExistingEditScreen: (Int) -> Unit
 
 ) {
-    val isDialogOpen = remember { mutableStateOf(false) }
-    val updateScreenState by viewModel.updateDeckState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
 
+    val updateScreenState by viewModel.updateDeckState.collectAsState()
+    var deckName by rememberSaveable { mutableStateOf(updateScreenState.deck.deck.name) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(updateScreenState.deck.deck.name) {
+        if (deckName.isEmpty()) {
+            deckName = updateScreenState.deck.deck.name
+        }
+    }
     Scaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
@@ -97,33 +109,28 @@ fun UpdateScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                isDialogOpen.value = true
+                navigateToEditScreen(-1)
 
             }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Deck")
             }
         },
 
-        ) { innerPadding ->
+        ) { contentPadding ->
 
-        if (isDialogOpen.value) {
-            CreateUpdateConfirmDialog(
 
-                deck = updateScreenState.deck,
-                onDismiss = { isDialogOpen.value = false },
-                navigateToEditScreen = navigateToEditScreen,
-            )
-        }
-        if (!updateScreenState.isLoading) {
-            UpdateBody(
-                modifier = modifier,
-                paddingValues = innerPadding,
-                flashcards = updateScreenState.deck.flashcards,
-                navigateToEditExistingEditScreen = navigateToEditExistingEditScreen,
-                viewModel = viewModel,
-                snackbarHostState = snackbarHostState,
-            )
-        }
+        UpdateBody(
+            modifier = modifier,
+            paddingValues = contentPadding,
+            flashcards = updateScreenState.deck.flashcards,
+            navigateToEditExistingEditScreen = navigateToEditExistingEditScreen,
+            viewModel = viewModel,
+            snackbarHostState = snackbarHostState,
+            deckName = deckName,
+            coroutineScope = coroutineScope,
+            onDeckNameChange = {deckName = it},
+        )
+
     }
 
 
@@ -136,9 +143,35 @@ fun UpdateBody(
     flashcards: List<Flashcard>,
     viewModel: UpdateDeckViewModel,
     navigateToEditExistingEditScreen: (Int) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    deckName: String,
+    onDeckNameChange: (String) -> Unit,
+    coroutineScope: CoroutineScope,
 ) {
-    val coroutineScope = rememberCoroutineScope()
+
+    Column(
+        modifier = Modifier
+            .padding(paddingValues),
+
+    ) {
+        OutlinedTextField(
+            value = deckName,
+            onValueChange = { onDeckNameChange(it)},
+            label = { Text("Deck Name") },
+            modifier = Modifier.fillMaxWidth().padding(dimensionResource(R.dimen.padding_large))
+        )
+
+        TextButton(
+            onClick = {
+                coroutineScope.launch {
+                    viewModel.updateDeckName(deckName)
+                }
+            },
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            Text("Save")
+        }
+
     if (flashcards.isEmpty()) {
         Text(
             text = "prazdnota",
@@ -151,8 +184,7 @@ fun UpdateBody(
             modifier = modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_small)),
-            contentPadding = paddingValues,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium)),
             userScrollEnabled = true
         ) {
             items(flashcards) { flashcard ->
@@ -182,30 +214,21 @@ fun UpdateBody(
                 )
             }
         }
-    }
+    } }
 }
 
 @Composable
-fun CreateUpdateConfirmDialog(
-    deck: DeckWithFlashcards,
+fun DeleteConfirmationDialog(
     onDismiss: () -> Unit,
-    navigateToEditScreen: (Int) -> Unit
+    onConfirm: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text("Confirm action")
-        },
-        text = {
-            Text("Are you sure you want to create a new flashcard in the deck '${deck.deck.name}'?")
-        },
+        title = { Text("Confirm Deletion") },
+        text = { Text("Are you sure you want to delete this flashcard?") },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    navigateToEditScreen(-1)
-                }
-            ) {
-                Text("Confirm")
+            TextButton(onClick = onConfirm) {
+                Text("Delete")
             }
         },
         dismissButton = {
@@ -244,7 +267,14 @@ fun FlashCardItem(
 
 
     ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    if (showDeleteDialog) {
+        DeleteConfirmationDialog(
+            onDismiss = { showDeleteDialog = false },
+            onConfirm = { onDeleteFlashcard(flashcard) }
+        )
 
+    }
 
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
@@ -275,15 +305,12 @@ fun FlashCardItem(
                 val icon = if (flashcard.isKnown) Icons.Filled.CheckCircle else Icons.Filled.Close
                 IconButton(onClick = {
                     onToggleKnownStatus(flashcard)
-
-
                 }) {
-
                     Icon(icon, contentDescription = "Toggle Known Status")
 
 
                 }
-                IconButton(onClick = { onDeleteFlashcard(flashcard) }) {
+                IconButton(onClick = { showDeleteDialog = true }) {
                     Icon(Icons.Filled.Delete, contentDescription = "Delete Flashcard")
                 }
             }
@@ -305,7 +332,10 @@ fun UpdateBodyPreview() {
         flashcards = sampleFlashcards,
         navigateToEditExistingEditScreen = TODO(),
         viewModel = TODO(),
-        snackbarHostState = TODO()
+        snackbarHostState = TODO(),
+        deckName = TODO(),
+        onDeckNameChange = TODO(),
+        coroutineScope = TODO()
     )
 }
 
