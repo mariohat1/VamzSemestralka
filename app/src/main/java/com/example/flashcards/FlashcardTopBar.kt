@@ -1,5 +1,7 @@
 package com.example.flashcards
 
+import android.app.Application
+import androidx.activity.result.launch
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -15,6 +17,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -26,16 +29,25 @@ import com.example.flashcards.data.database.FlaschcardDatabase
 import com.example.flashcards.data.repository.DeckRepository
 import com.example.flashcards.data.repository.FlashcardRepository
 import com.example.flashcards.viewModel.FlashcardNavHost
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+
+
+
 
 @Composable
 fun FlashcardApp(navController: NavHostController = rememberNavController()) {
     val context = LocalContext.current.applicationContext
-    val deckRepository = remember {
+    val database = FlaschcardDatabase.getDatabase(context)
+    val deckRepository =
         DeckRepository(
-            FlaschcardDatabase.getDatabase(context).deckDao()
+            database.deckDao()
         )
-    }
-    val flashcardRepository =remember { FlashcardRepository(FlaschcardDatabase.getDatabase(context).flashcardDao()) }
+
+    val flashcardRepository =FlashcardRepository(database.flashcardDao())
 
     FlashcardNavHost(
         navController = navController,

@@ -28,7 +28,13 @@ class PlayViewmodel(
     private val stateHandle: SavedStateHandle
 ) : ViewModel() {
     private val deckId: Int = checkNotNull(stateHandle["deckId"])
+    var currentIndex = MutableStateFlow(0)
+        private set
 
+    var justMarked = MutableStateFlow(false)
+        private set
+    var isFlipped = MutableStateFlow(false)
+        private set
 
     init {
         Log.d("PlayViewModel", "Inicializujem PlayViewModel pre deckId: $deckId")
@@ -37,9 +43,10 @@ class PlayViewmodel(
     private val deckTitleFlow = deckRepository.getDeck(deckId)
         .filterNotNull()
         .map { it.deck.name }
+        .distinctUntilChanged()
         .stateIn(
             viewModelScope,
-            SharingStarted.Lazily,
+            SharingStarted.WhileSubscribed(),
             initialValue = ""
         )
 
@@ -51,20 +58,44 @@ class PlayViewmodel(
                 deckTitle = deckTitle,
                 isLoading = false
             )
-        }.distinctUntilChanged()
-            .stateIn(
+        }
+        .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
             initialValue = PlayState()
         )
 
+    fun goToNextCard() {
+        currentIndex.value++
+        justMarked.value = false
+        isFlipped.value = false
 
 
+    }
 
+    fun goToPrevCard() {
+        currentIndex.value--
+        justMarked.value = false
+        isFlipped.value = false
+    }
+
+    fun recalculateIndex() {
+        if (currentIndex.value == playState.value.flashcards.lastIndex && playState.value.flashcards.size > 1) {
+            currentIndex.value--
+            justMarked.value = true
+
+
+        }
+    }
+    fun flipCard() {
+        isFlipped.value = !isFlipped.value
+    }
 
     suspend fun updateFlaschardStatus(id: Int, isKnown: Boolean) {
         flashcardRepository.updateIsKnown(id, isKnown)
 
     }
 }
+
+
 

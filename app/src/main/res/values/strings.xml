@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FlashCards</string>
+    <string name = "noDeckFound">No flashcards available.</string>>
 </resources>

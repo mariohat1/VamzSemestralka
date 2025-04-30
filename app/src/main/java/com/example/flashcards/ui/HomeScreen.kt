@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,6 +23,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -36,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,12 +50,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
+import com.example.flashcards.data.states.HomeScreenState
 import com.example.flashcards.ui.theme.LightSkyBlue
 import com.example.flashcards.ui.theme.LightBlue
 
@@ -73,8 +80,9 @@ fun HomeScreen(
     ) {
     Log.d("HomeScreen", "Recomposed")
     val homeScreenState by viewModel.homeScreenState.collectAsState()
-    val isDialogOpen = remember { mutableStateOf(false) }
+    var isDialogOpen by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    var deckName by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
 
@@ -90,7 +98,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                isDialogOpen.value = true
+                isDialogOpen = true
 
             }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Deck")
@@ -98,31 +106,35 @@ fun HomeScreen(
         },
     ) { contentPadding ->
 
-        if (isDialogOpen.value) {
+        if (isDialogOpen) {
             CreateDeckDialog(
-                onDismiss = { isDialogOpen.value = false },
-                onSave = { deckName ->
-
+                onDismiss = {
+                    isDialogOpen = false
+                    deckName = ""
+                },
+                onSave = { name ->
                     coroutineScope.launch {
-                        viewModel.insert(deckName)
+                        viewModel.insert(name)
                     }
-
-                    isDialogOpen.value = false
-                }
+                    isDialogOpen = false
+                    deckName = ""
+                },
+                deckName = deckName,
+                onNameChange = { deckName = it }
             )
         }
 
-        if (!homeScreenState.isLoading) {
 
-            HomeBody(
-                decks = homeScreenState.decks,
-                modifier = Modifier,
-                onItemClick = navigateToPlayScreen,
-                contentPadding = contentPadding,
-                navigateToUpdateScreen = navigateToUpdateScreen,
-                viewModel = viewModel
-            )
-        }
+
+        HomeBody(
+            decks = homeScreenState.decks,
+            modifier = Modifier,
+            onItemClick = navigateToPlayScreen,
+            contentPadding = contentPadding,
+            navigateToUpdateScreen = navigateToUpdateScreen,
+            viewModel = viewModel,
+            homeScreenState = homeScreenState
+        )
 
 
     }
@@ -135,7 +147,9 @@ fun CreateDeckDialogPreview() {
 
     CreateDeckDialog(
         onDismiss = { },
-        onSave = { }
+        onSave = { },
+        deckName = TODO(),
+        onNameChange = TODO()
     )
 
 
@@ -144,9 +158,11 @@ fun CreateDeckDialogPreview() {
 @Composable
 fun CreateDeckDialog(
     onDismiss: () -> Unit,
-    onSave: (String) -> Unit
+    onSave: (String) -> Unit,
+    deckName: String,
+    onNameChange: (String) -> Unit,
 ) {
-    var deckName by remember { mutableStateOf("") }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -170,7 +186,7 @@ fun CreateDeckDialog(
         text = {
             OutlinedTextField(
                 value = deckName,
-                onValueChange = { deckName = it },
+                onValueChange = onNameChange,
                 label = { Text("Name") },
                 singleLine = true
             )
@@ -186,49 +202,75 @@ fun HomeBody(
     onItemClick: (Int) -> Unit,
     navigateToUpdateScreen: (Int) -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    viewModel: HomeScreenViewModel
+    viewModel: HomeScreenViewModel,
+    homeScreenState: HomeScreenState
 
 ) {
+    Log.d("HomeScreen", "isLoading: ${homeScreenState.isLoading}, decks size: ${homeScreenState.decks.size}")
+    when {
+        homeScreenState.isLoading -> {
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+                contentAlignment = Alignment.Center,
 
-    if (decks.isEmpty()) {
-        Text(
-            text = "prazdnota",
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(contentPadding),
-        )
-    } else {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 200.dp),
-            modifier = modifier.fillMaxSize(),
-            contentPadding = contentPadding,
-            userScrollEnabled = true
-        ) {
-
-            items(items = decks, key = { it.deck.deckId }) { item ->
-
-                DeckItem(
-                    item = item,
-                    modifier = Modifier
-                        .padding(dimensionResource(id = R.dimen.padding_small))
-                        .fillMaxWidth()
-
-                        .clickable {
-                            Log.d("Navigation", "Spúšťam navigáciu na PlayScreen s deckId: ${item.deck.deckId}")
-                            onItemClick(item.deck.deckId) },
-                    navigateToUpdateScreen = navigateToUpdateScreen,
-                    viewModel = viewModel
+            ) {
+                CircularProgressIndicator(
+                    modifier= Modifier,
                 )
-
-
             }
         }
 
+        homeScreenState.decks.isEmpty() -> {
+            Text(
+                text = stringResource(R.string.noDeckFound),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .padding(contentPadding)
+                    .fillMaxSize(),
+            )
+        }
 
+        !homeScreenState.isLoading -> {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 200.dp),
+                modifier = modifier.fillMaxSize(),
+                contentPadding = contentPadding,
+                userScrollEnabled = true
+            ) {
+
+                items(items = decks, key = { it.deck.deckId }) { item ->
+
+                    DeckItem(
+                        item = item,
+                        modifier = Modifier
+                            .clickable {
+                                Log.d(
+                                    "Navigation",
+                                    "Spúšťam navigáciu na PlayScreen s deckId: ${item.deck.deckId}"
+                                )
+
+
+
+
+                                onItemClick(item.deck.deckId)
+                            },
+                        navigateToUpdateScreen = navigateToUpdateScreen,
+                        viewModel = viewModel
+                    )
+
+
+                }
+            }
+
+
+        }
     }
-}
 
+}
 
 @Preview
 @Composable
@@ -249,6 +291,7 @@ fun HomeBodyPreview() {
         navigateToUpdateScreen = TODO(),
         contentPadding = TODO(),
         viewModel = TODO(),
+        homeScreenState = TODO(),
     )
 }
 
@@ -258,12 +301,17 @@ fun DeckItem(
     item: DeckWithFlashcards,
     modifier: Modifier,
     navigateToUpdateScreen: (Int) -> Unit,
-    viewModel: HomeScreenViewModel
-) {
-    var expanded by remember { mutableStateOf(false) }
+    viewModel: HomeScreenViewModel,
+
+    ) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+
     Card(
         modifier = modifier
+            .padding(dimensionResource(id = R.dimen.padding_small))
+            .fillMaxWidth()
+
 
 
             .fillMaxWidth()
@@ -330,6 +378,8 @@ fun DeckItem(
         }
     }
 }
+
+
 
 
 

@@ -9,30 +9,25 @@ import kotlinx.coroutines.withContext
 
 class DeckRepository(private val deckDao: DeckDao) {
 
-    suspend fun insertDeck(deck: Deck){
-        withContext(Dispatchers.IO) {
-            deckDao.insertDeck(deck)
-        }
-
+    suspend fun insertDeck(deck: Deck) {
+        deckDao.insertDeck(deck)
     }
 
 
     suspend fun updateDeck(deck: Deck) {
-        withContext(Dispatchers.IO) {
-            deckDao.updateDeck(deck)
-        }
+        deckDao.updateDeck(deck)
     }
 
 
     suspend fun deleteDeck(deck: Deck) {
-        withContext(Dispatchers.IO) {
-            deckDao.deleteDeck(deck)
-        }
+
+        deckDao.deleteDeck(deck)
+
     }
 
 
     fun getAllDecks(): Flow<List<Deck>> {
-       return deckDao.getAllDecks()
+        return deckDao.getAllDecks()
 
     }
 
