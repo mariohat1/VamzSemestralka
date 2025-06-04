@@ -2,12 +2,7 @@ package com.example.flashcards.viewModel
 
 import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -17,14 +12,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.flashcards.data.repository.DeckRepository
 import com.example.flashcards.data.repository.FlashcardRepository
-import com.example.flashcards.ui.EditNavigation
 import com.example.flashcards.ui.FlashcardEditScreen
-import com.example.flashcards.ui.HomeDestination
 import com.example.flashcards.ui.HomeScreen
-import com.example.flashcards.ui.PlayDestination
 import com.example.flashcards.ui.PlayScreen
-import com.example.flashcards.ui.UpdateDestination
 import com.example.flashcards.ui.UpdateScreen
+
+
+
+const val ROUTE_HOME = "home"
+const val ROUTE_UPDATE = "update/{deckId}"
+const val ROUTE_PLAY = "play/{deckId}"
+const val ROUTE_EDIT = "edit/{deckId}/{flashcardId}"
 
 
 @Composable
@@ -38,12 +36,10 @@ fun FlashcardNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = HomeDestination.route,
+        startDestination = ROUTE_HOME,
         modifier = modifier
     ) {
-
-
-        composable(route = HomeDestination.route) {
+        composable(route = ROUTE_HOME) {
             HomeScreen(
                 viewModel = viewModel( initializer = {HomeScreenViewModel(
                     deckRepository,
@@ -59,12 +55,12 @@ fun FlashcardNavHost(
 
         }
         composable(
-            route = UpdateDestination.route,
+            route = ROUTE_UPDATE,
             arguments = listOf(navArgument("deckId") { type = NavType.IntType })
         ) { backStackEntry ->
             val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
             val viewmodel = viewModel(initializer = {
-                UpdateDeckViewModel(
+                EditDeckViewModel(
                     deckRepository = deckRepository,
                     flashcardRepository = flashcardRepository,
                     savedStateHandle = SavedStateHandle(mapOf("deckId" to deckId))
@@ -78,16 +74,14 @@ fun FlashcardNavHost(
                 navigateToEditScreen = { flashcardId ->
                     navController.navigate("edit/$deckId/$flashcardId")
                 },
-                navigateBack = { navController.navigate(HomeDestination.route) {
-                    popUpTo(HomeDestination.route) { inclusive = true }
+                navigateBack = { navController.navigate(ROUTE_HOME) {
+                    popUpTo(ROUTE_HOME) { inclusive = true }
                 } },
-                navigateToEditExistingEditScreen = { flashcardId ->
-                    navController.navigate("edit/$deckId/$flashcardId")
-                }
+
             )
         }
         composable(
-            route = EditNavigation.route,
+            route = ROUTE_EDIT,
             arguments = listOf(
                 navArgument("deckId") { type = NavType.IntType },
                 navArgument("flashcardId") { type = NavType.IntType }
@@ -110,7 +104,7 @@ fun FlashcardNavHost(
             )
         }
         composable(
-            route = PlayDestination.route,
+            route = ROUTE_PLAY,
             arguments = listOf(
                 navArgument("deckId") { type = NavType.IntType },
 
@@ -118,7 +112,7 @@ fun FlashcardNavHost(
         ) { backStackEntry ->
             Log.d("Navigation", "Vykonavam composable pre PlayDestination s deckId: ${backStackEntry.arguments?.getInt("deckId")}")
             val deckId = backStackEntry.arguments?.getInt("deckId")
-            val viewmodel = viewModel(initializer = {  PlayViewmodel(
+            val viewmodel = viewModel(initializer = {  PlayViewModel(
                 deckRepository,
                 flashcardRepository,
                 stateHandle = SavedStateHandle(mapOf("deckId" to deckId)),
@@ -126,8 +120,8 @@ fun FlashcardNavHost(
 
             PlayScreen(
                 viewModel = viewmodel,
-                navigateBack = { navController.navigate(HomeDestination.route) {
-                    popUpTo(HomeDestination.route) { inclusive = true }}},
+                navigateBack = { navController.navigate(ROUTE_HOME) {
+                    popUpTo(ROUTE_HOME) { inclusive = true }}},
                 modifier = modifier
             )
 

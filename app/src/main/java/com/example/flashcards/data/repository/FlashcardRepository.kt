@@ -10,37 +10,38 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class FlashcardRepository(private val  flashcardDao: FlashcardDao) {
+class FlashcardRepository(private val flashcardDao: FlashcardDao) {
 
-   suspend fun insertFlashcard(flashcard: Flashcard) {
-       withContext(Dispatchers.IO) {
-           flashcardDao.insertFlashcard(flashcard)
-       }
+    suspend fun insertFlashcard(flashcard: Flashcard) {
+
+        flashcardDao.insertFlashcard(flashcard)
+
 
     }
 
 
     suspend fun deleteFlashcard(flashcard: Flashcard) {
-        withContext(Dispatchers.IO) {
-            flashcardDao.deleteFlashcard(flashcard)
-        }
+
+        flashcardDao.deleteFlashcard(flashcard)
+
     }
 
 
-   suspend fun updateFlashcard(flashcard: Flashcard) {
-       withContext(Dispatchers.IO) {
-           flashcardDao.updateFlashcard(flashcard)
-       }
+    suspend fun updateFlashcard(flashcard: Flashcard) {
+
+        flashcardDao.updateFlashcard(flashcard)
+
     }
 
     fun getUknownFlashcardsByDeckId(deckId: Int): Flow<List<Flashcard>> {
         return flashcardDao.getUnknownFlashcardsByDeckId(deckId)
 
     }
+
     suspend fun updateIsKnown(id: Int, isKnown: Boolean) {
-        withContext(Dispatchers.IO) {
-            flashcardDao.updateIsKnown(id, isKnown)
-        }
+
+        flashcardDao.updateIsKnown(id, isKnown)
+
     }
 
 

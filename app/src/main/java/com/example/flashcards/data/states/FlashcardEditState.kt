@@ -11,8 +11,4 @@ data class EditFlashcardScreen(
     ),
     val isLoading: Boolean = true,
     val deckTitle: String = ""
-
-
-
-
 )

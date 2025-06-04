@@ -3,8 +3,8 @@ package com.example.flashcards.viewModel
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.flashcards.LengthConstants
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.data.repository.DeckRepository
 import com.example.flashcards.data.repository.FlashcardRepository
@@ -12,7 +12,6 @@ import com.example.flashcards.data.states.EditFlashcardScreen
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -23,7 +22,10 @@ class FlashcardEditViewModel(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     val deckId: Int = checkNotNull(savedStateHandle["deckId"])
-
+    var questionText = MutableStateFlow("")
+    private set
+    var answerText = MutableStateFlow("")
+    private set
 
     private val flashcardId: Int = checkNotNull(savedStateHandle["flashcardId"])
     private val editFlashcardScreenState = MutableStateFlow(EditFlashcardScreen())
@@ -31,7 +33,6 @@ class FlashcardEditViewModel(
     val flashcardScreenState: StateFlow<EditFlashcardScreen> = editFlashcardScreenState
 
     init {
-
         if (flashcardId != -1) {
             viewModelScope.launch {
                 flashcardRepository.getFlashcardById(flashcardId)
@@ -42,15 +43,15 @@ class FlashcardEditViewModel(
                             deckTitle = deck.deck.name,
                             isLoading = false
                         )
-                    }.filterNotNull().collect { screenState ->
-                        Log.d("EditVM", "Emitting screenState: ${screenState.flashcard}") // Add this log
+                    }.collect { screenState ->
                         editFlashcardScreenState.value = screenState
+                        questionText.value = editFlashcardScreenState.value.flashcard.question
+                        answerText.value = editFlashcardScreenState.value.flashcard.answer
                     }
             }
+
         } else {
-
             viewModelScope.launch {
-
                 deckRepository.getDeck(deckId).filterNotNull()
                     .collect { deck ->
                         Log.d("FlashcardEditViewModel", "New Flashcard - Deck: $deck")
@@ -64,9 +65,25 @@ class FlashcardEditViewModel(
                         )
                     }
             }
+            questionText.value = ""
+            answerText.value = ""
+
+
+
         }
 
         Log.d("FlashcardEditViewModel", "Deck ID: $deckId, Flashcard ID: $flashcardId")
+    }
+    fun onQuestionChanged(newValue: String) {
+        if (newValue.length <= LengthConstants.MAX_DECK_NAME_LENGTH) {
+            questionText.value = newValue
+        }
+    }
+
+    fun onAnswerChanged(newValue: String) {
+        if (newValue.length <= LengthConstants.MAX_CARD_QUESTION_LENGTH) {
+            answerText.value = newValue
+        }
     }
 
     suspend fun saveFlashcard(question: String, answer: String) {
@@ -86,10 +103,8 @@ class FlashcardEditViewModel(
         }
     }
 
-
     suspend fun delete(flashcard: Flashcard) {
         flashcardRepository.deleteFlashcard(flashcard)
-
     }
 
 

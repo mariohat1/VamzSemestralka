@@ -13,7 +13,6 @@ data class UpdateDeckState(
         flashcards = listOf()
     ),
     val isLoading :Boolean= true
-
 )
 
 

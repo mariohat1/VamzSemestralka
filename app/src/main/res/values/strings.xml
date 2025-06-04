@@ -1,4 +1,31 @@
 <resources>
     <string name="app_name">FlashCards</string>
-    <string name = "noDeckFound">No flashcards available.</string>>
+    <string name = "no_deck_found">No Decks available.</string>>
+    <string name = "no_flashcards">No Flashcards available.</string>>
+    <string name = "save">Save</string>>
+    <string name = "answer">Answer</string>>
+    <string name = "known_status">Toggle known Status</string>>
+    <string name = "question">Question</string>>
+    <string name = "delete_flashcard">Delete Flashcard</string>
+    <string name="cancel">Cancel</string>
+    <string name="create_deck">Create Deck</string>
+    <string name="name">Name</string>
+    <string name="confirm_deletion">Confirm Deletion</string>
+    <string name="delete_flashcard_question">Are you sure you want to delete this flashcard?</string>
+    <string name="delete">Delete</string>
+    <string name="marked_as_unknown">Marked as Unknown</string>
+    <string name="marked_as_known">Marked as Known</string>
+    <string name="back">Back</string>
+    <string name="known">Known</string>
+    <string name="forward">Forward</string>
+    <string name="delete_deck_question">Are you sure you want to delete this deck?</string>
+    <string name="more_options">More options</string>
+    <string name="edit">Edit</string>
+    <string name="deck_name">Deck Name</string>
+    >
+
+
+
+
+
 </resources>

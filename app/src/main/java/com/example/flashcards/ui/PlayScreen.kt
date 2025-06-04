@@ -43,26 +43,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flashcards.FlashcardTopAppBar
-import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.ui.theme.LightSkyBlue
-import com.example.flashcards.viewModel.PlayViewmodel
+import com.example.flashcards.viewModel.PlayViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-
-object PlayDestination : NavigationDestination {
-    override val route = "play/{deckId}"
-    override val titleRes = R.string.app_name
-}
 
 
 @Composable
 fun PlayScreen(
-    viewModel: PlayViewmodel,
+    viewModel: PlayViewModel,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -70,11 +65,7 @@ fun PlayScreen(
     val currentIndex by viewModel.currentIndex.collectAsState()
     val isFlipped by viewModel.isFlipped.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-
     val justMarkedKnown by viewModel.justMarked.collectAsState()
-
-
-
     Scaffold(
         topBar = {
             FlashcardTopAppBar(
@@ -83,34 +74,27 @@ fun PlayScreen(
                 modifier = modifier,
                 navigateBack = navigateBack,
             )
-
-
         },
     ) { innerPadding ->
-
-            PlayScreenBody(
-                innerPadding,
-                flashcards = playState.flashcards,
-                viewModel = viewModel,
-                modifier = modifier,
-                currentIndex = currentIndex,
-                isFlipped = isFlipped,
-                coroutineScope = coroutineScope,
-                justMarkedKnown = justMarkedKnown,
-            )
-
-
+        PlayScreenBody(
+            innerPadding,
+            flashcards = playState.flashcards,
+            viewModel = viewModel,
+            modifier = modifier,
+            currentIndex = currentIndex,
+            isFlipped = isFlipped,
+            coroutineScope = coroutineScope,
+            justMarkedKnown = justMarkedKnown,
+        )
     }
-
 }
-
 
 @Composable
 fun PlayScreenBody(
     innerPadding: PaddingValues,
     flashcards: List<Flashcard>,
     modifier: Modifier = Modifier,
-    viewModel: PlayViewmodel,
+    viewModel: PlayViewModel,
     currentIndex: Int,
     currentFlashcard: Flashcard? = flashcards.getOrNull(currentIndex),
     isFlipped: Boolean,
@@ -142,9 +126,7 @@ fun PlayScreenBody(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
-
         currentFlashcard?.let { card ->
-
             FlashcardCard(
                 currentFlashcard = card,
                 isFlipped = isFlipped,
@@ -162,7 +144,7 @@ fun PlayScreenBody(
                 justMarkedKnown = justMarkedKnown
             )
 
-        }?: Text("No flashcards available.")
+        } ?: Text(stringResource(R.string.no_flashcards))
 
     }
 }
@@ -171,7 +153,7 @@ fun PlayScreenBody(
 private fun PlayButtons(
     modifier: Modifier,
     currentIndex: Int,
-    viewModel: PlayViewmodel,
+    viewModel: PlayViewModel,
     coroutineScope: CoroutineScope,
     card: Flashcard,
     flashcards: List<Flashcard>,
@@ -210,7 +192,7 @@ private fun PlayButtons(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.Black
                         )
 
@@ -225,7 +207,7 @@ private fun PlayButtons(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.updateFlaschardStatus(card.flashcardId, true)
+                            viewModel.updateFlashcardStatus(card.flashcardId, true)
                             viewModel.recalculateIndex()
                         }
                     },
@@ -237,7 +219,7 @@ private fun PlayButtons(
 
                     ) {
                     Text(
-                        text = "Known",
+                        text = stringResource(R.string.known),
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = 1,
                         softWrap = false
@@ -247,7 +229,6 @@ private fun PlayButtons(
 
             Box(
                 modifier = modifier.weight(1f),
-
                 contentAlignment = Alignment.CenterEnd,
             ) {
                 if (currentIndex < flashcards.lastIndex && !justMarkedKnown) {
@@ -261,7 +242,7 @@ private fun PlayButtons(
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.forward),
                             tint = Color.Black
                         )
 
@@ -279,7 +260,6 @@ fun FlashcardCard(
     currentFlashcard: Flashcard?,
     isFlipped: Boolean,
     onFlip: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     currentFlashcard?.let { card ->
         val rotation by animateFloatAsState(

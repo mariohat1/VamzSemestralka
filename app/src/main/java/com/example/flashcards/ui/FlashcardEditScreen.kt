@@ -1,6 +1,5 @@
 package com.example.flashcards.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -12,64 +11,25 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.flashcards.FlashcardTopAppBar
-import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
 import com.example.flashcards.viewModel.FlashcardEditViewModel
 import kotlinx.coroutines.launch
 
-object EditNavigation : NavigationDestination {
-    override var route = "edit/{deckId}/{flashcardId}"
-    override val titleRes = R.string.app_name
-}
 
 @Composable
 fun FlashcardEditScreen(
-    viewModel: FlashcardEditViewModel,
-    modifier: Modifier,
-    navigateBack: () -> Unit
+    viewModel: FlashcardEditViewModel, modifier: Modifier, navigateBack: () -> Unit
 ) {
-
-
     val flashcardEditState by viewModel.flashcardScreenState.collectAsState()
-
-
-    val flashcard = flashcardEditState.flashcard
-
-
-    var questionText by rememberSaveable {
-        mutableStateOf(
-            flashcard.question
-        )
-    }
-    Log.d("EditScreen", "flashcard received: $questionText")
-    var answerText by rememberSaveable {
-        mutableStateOf(
-            flashcard.answer
-        )
-
-    }
-    Log.d("EditScreen", "flashcard received: $answerText")
-    var isEdited by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(flashcard) {
-
-        if (!isEdited && !flashcardEditState.isLoading) {
-            questionText = flashcard.question
-            answerText = flashcard.answer
-            isEdited = true
-        }
-    }
-
-
+    val questionText by viewModel.questionText.collectAsState()
+    val answerText by viewModel.answerText.collectAsState()
     Scaffold(
         topBar = {
             FlashcardTopAppBar(
@@ -78,20 +38,17 @@ fun FlashcardEditScreen(
                 modifier = modifier,
                 navigateBack = navigateBack,
             )
-
-
         },
     ) { innerPadding ->
         EditBody(
             innerPadding,
             viewModel,
             question = questionText,
-            onQuestionChange = { questionText = it },
+            onQuestionChange = { viewModel.onQuestionChanged(it) },
             answer = answerText,
-            onAnswerChange = { answerText = it },
+            onAnswerChange = { viewModel.onAnswerChanged(it) },
             onSave = navigateBack,
         )
-
     }
 }
 
@@ -109,13 +66,15 @@ private fun EditBody(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    Column(modifier = Modifier
-        .padding(innerPadding)
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(innerPadding)
+            .padding(16.dp)
+    ) {
         TextField(
             value = question,
             onValueChange = onQuestionChange,
-            label = { Text("Question") },
+            label = { Text(stringResource(R.string.question)) },
             modifier = Modifier.fillMaxWidth()
 
         )
@@ -125,9 +84,10 @@ private fun EditBody(
         TextField(
             value = answer,
             onValueChange = onAnswerChange,
-            label = { Text("Answer") },
-            modifier = Modifier.fillMaxWidth().
-            height(150.dp),
+            label = { Text(stringResource(R.string.answer)) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -136,14 +96,13 @@ private fun EditBody(
                 if (question.isNotBlank() && answer.isNotBlank()) {
                     coroutineScope.launch {
                         viewModel.saveFlashcard(question = question, answer = answer)
-
                     }
                     onSave()
                 }
             },
             enabled = question.isNotBlank() && answer.isNotBlank(),
         ) {
-            Text("Save")
+            Text(stringResource(R.string.save))
         }
     }
 }

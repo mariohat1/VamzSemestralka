@@ -2,7 +2,6 @@ package com.example.flashcards.viewModel
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.Flashcard
@@ -15,7 +14,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class UpdateDeckViewModel(
+class EditDeckViewModel(
     private val deckRepository: DeckRepository,
     private val flashcardRepository: FlashcardRepository,
     savedStateHandle: SavedStateHandle
@@ -26,7 +25,6 @@ class UpdateDeckViewModel(
         deckRepository.getDeck(deckId)
             .filterNotNull()
             .map { deck -> UpdateDeckState(deck, false) }
-
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.Eagerly,

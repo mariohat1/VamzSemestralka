@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +17,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -26,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,29 +44,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.flashcards.FlashcardBottomBar
 import com.example.flashcards.FlashcardTopAppBar
-import com.example.flashcards.NavigationDestination
 import com.example.flashcards.R
+import com.example.flashcards.LengthConstants
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
 import com.example.flashcards.data.states.HomeScreenState
-import com.example.flashcards.ui.theme.LightSkyBlue
 import com.example.flashcards.ui.theme.LightBlue
-
+import com.example.flashcards.ui.theme.LightSkyBlue
 import com.example.flashcards.viewModel.HomeScreenViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-object HomeDestination : NavigationDestination {
-    override val route = "home"
-    override val titleRes = R.string.app_name
-}
 
 @Composable
 fun HomeScreen(
@@ -85,7 +78,11 @@ fun HomeScreen(
     var deckName by rememberSaveable { mutableStateOf("") }
 
     Scaffold(
-
+        bottomBar = {
+            FlashcardBottomBar(
+                onClick = { isDialogOpen = true }
+            )
+        },
         topBar = {
             FlashcardTopAppBar(
                 title = stringResource(R.string.app_name),
@@ -93,19 +90,8 @@ fun HomeScreen(
                 modifier = modifier,
                 navigateBack = { },
             )
-
-
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                isDialogOpen = true
-
-            }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Deck")
-            }
-        },
-    ) { contentPadding ->
-
+        ) { contentPadding ->
         if (isDialogOpen) {
             CreateDeckDialog(
                 onDismiss = {
@@ -120,12 +106,11 @@ fun HomeScreen(
                     deckName = ""
                 },
                 deckName = deckName,
-                onNameChange = { deckName = it }
+                onNameChange = {
+                    if (it.length <= LengthConstants.MAX_DECK_NAME_LENGTH) deckName = it
+                }
             )
         }
-
-
-
         HomeBody(
             decks = homeScreenState.decks,
             modifier = Modifier,
@@ -172,24 +157,26 @@ fun CreateDeckDialog(
                     onSave(deckName)
                     onDismiss()
                 },
-                enabled = deckName.isNotBlank()
-            ) {
-                Text("Save")
+                enabled = deckName.isNotBlank(),
+
+                ) {
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         },
-        title = { Text("Create Deck") },
+        title = { Text(stringResource(R.string.create_deck)) },
         text = {
             OutlinedTextField(
                 value = deckName,
                 onValueChange = onNameChange,
-                label = { Text("Name") },
-                singleLine = true
-            )
+                label = { Text(stringResource(R.string.name)) },
+                singleLine = true,
+
+                )
         }
     )
 }
@@ -201,12 +188,13 @@ fun HomeBody(
     modifier: Modifier,
     onItemClick: (Int) -> Unit,
     navigateToUpdateScreen: (Int) -> Unit,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues,
     viewModel: HomeScreenViewModel,
     homeScreenState: HomeScreenState
 
 ) {
-    Log.d("HomeScreen", "isLoading: ${homeScreenState.isLoading}, decks size: ${homeScreenState.decks.size}")
+    var deckToDelete by remember { mutableStateOf<Deck?>(null) }
+    val coroutineScope = rememberCoroutineScope()
     when {
         homeScreenState.isLoading -> {
 
@@ -216,18 +204,18 @@ fun HomeBody(
                     .padding(contentPadding),
                 contentAlignment = Alignment.Center,
 
-            ) {
+                ) {
                 CircularProgressIndicator(
-                    modifier= Modifier,
+                    modifier = Modifier,
                 )
             }
         }
 
         homeScreenState.decks.isEmpty() -> {
             Text(
-                text = stringResource(R.string.noDeckFound),
+                text = stringResource(R.string.no_deck_found),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .padding(contentPadding)
                     .fillMaxSize(),
@@ -237,13 +225,13 @@ fun HomeBody(
         !homeScreenState.isLoading -> {
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 200.dp),
-                modifier = modifier.fillMaxSize(),
+                modifier = modifier
+                    .fillMaxSize(),
                 contentPadding = contentPadding,
                 userScrollEnabled = true
             ) {
 
                 items(items = decks, key = { it.deck.deckId }) { item ->
-
                     DeckItem(
                         item = item,
                         modifier = Modifier
@@ -252,15 +240,10 @@ fun HomeBody(
                                     "Navigation",
                                     "Spúšťam navigáciu na PlayScreen s deckId: ${item.deck.deckId}"
                                 )
-
-
-
-
                                 onItemClick(item.deck.deckId)
                             },
                         navigateToUpdateScreen = navigateToUpdateScreen,
-                        viewModel = viewModel
-                    )
+                        onRequestDelete = { deckToDelete = it })
 
 
                 }
@@ -269,8 +252,43 @@ fun HomeBody(
 
         }
     }
+    deckToDelete?.let { deck ->
+        DeleteDialog(
+            onDismiss = { deckToDelete = null },
+            onConfirm = {
+                coroutineScope.launch(Dispatchers.IO) {
+                    viewModel.deleteDeck(deck)
+                    deckToDelete = null
+                }
+            }
+        )
+    }
+
 
 }
+
+@Composable
+fun DeleteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.confirm_deletion)) },
+        text = { Text(stringResource(R.string.delete_deck_question)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.delete))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
 
 @Preview
 @Composable
@@ -301,17 +319,16 @@ fun DeckItem(
     item: DeckWithFlashcards,
     modifier: Modifier,
     navigateToUpdateScreen: (Int) -> Unit,
-    viewModel: HomeScreenViewModel,
+    onRequestDelete: (Deck) -> Unit
 
-    ) {
+) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+
 
     Card(
         modifier = modifier
-            .padding(dimensionResource(id = R.dimen.padding_small))
+            .padding(8.dp)
             .fillMaxWidth()
-
 
 
             .fillMaxWidth()
@@ -328,17 +345,20 @@ fun DeckItem(
                 text = item.deck.name,
                 Modifier
                     .background(LightSkyBlue)
-                    .fillMaxWidth(),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = FontFamily.SansSerif
-                ),
-                textAlign = TextAlign.Center
-            )
+                    .fillMaxWidth()
+                    .height(55.dp),
+
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+
+                )
             Text(
                 modifier = Modifier
                     .background(LightSkyBlue),
                 text = " terms: ${item.flashcards.size}",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                )
             )
 
         }
@@ -351,7 +371,7 @@ fun DeckItem(
 
             ) {
             IconButton(onClick = { expanded = !expanded }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.more_options))
             }
 
             DropdownMenu(
@@ -359,17 +379,16 @@ fun DeckItem(
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text("Update") },
+                    text = { Text(stringResource(R.string.edit)) },
                     onClick = {
                         navigateToUpdateScreen(item.deck.deckId)
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text("Delete") },
+                    text = { Text(stringResource(R.string.delete)) },
                     onClick = {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            viewModel.deleteDeck(item.deck)
-                        }
+                        onRequestDelete(item.deck)
+
                     }
                 )
             }
