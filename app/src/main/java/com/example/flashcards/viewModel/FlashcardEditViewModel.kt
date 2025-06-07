@@ -72,7 +72,6 @@ class FlashcardEditViewModel(
 
         }
 
-        Log.d("FlashcardEditViewModel", "Deck ID: $deckId, Flashcard ID: $flashcardId")
     }
     fun onQuestionChanged(newValue: String) {
         if (newValue.length <= LengthConstants.MAX_DECK_NAME_LENGTH) {

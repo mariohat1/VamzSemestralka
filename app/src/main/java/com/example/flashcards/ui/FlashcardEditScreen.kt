@@ -15,13 +15,18 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.flashcards.FlashcardTopAppBar
 import com.example.flashcards.R
 import com.example.flashcards.viewModel.FlashcardEditViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -32,24 +37,26 @@ fun FlashcardEditScreen(
     val flashcardEditState by viewModel.flashcardScreenState.collectAsState()
     val questionText by viewModel.questionText.collectAsState()
     val answerText by viewModel.answerText.collectAsState()
+    var isSaving by remember { mutableStateOf(false) }
+
     Scaffold(
         bottomBar = {
             BottomAppBar(
                 modifier = Modifier.fillMaxWidth(),
                 containerColor = MaterialTheme.colorScheme.background
             ) {
-                Spacer(modifier = Modifier.weight(1f))
                 val isEnabled = questionText.isNotBlank() && answerText.isNotBlank()
                 val coroutineScope = rememberCoroutineScope()
                 Button(
                     modifier = Modifier.padding(8.dp),
                     onClick = {
-                        coroutineScope.launch {
+                        isSaving = true
+                        coroutineScope.launch(Dispatchers.IO) {
                             viewModel.saveFlashcard(questionText, answerText)
                         }
                         navigateBack()
                     },
-                    enabled = isEnabled
+                    enabled = isEnabled && !isSaving
                 ) {
                     Text(stringResource(R.string.save))
                 }
@@ -93,7 +100,8 @@ fun EditBody(
             value = question,
             onValueChange = onQuestionChange,
             label = { Text(stringResource(R.string.question)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.titleMedium
 
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -104,7 +112,8 @@ fun EditBody(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp),
-            )
+            textStyle = MaterialTheme.typography.titleMedium
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
     }

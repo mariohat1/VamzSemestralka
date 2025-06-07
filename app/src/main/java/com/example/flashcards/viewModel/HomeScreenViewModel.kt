@@ -21,6 +21,7 @@ class HomeScreenViewModel(
         deckRepository.insertDeck(Deck(name = deckName))
     }
 
+
     val homeState: StateFlow<HomeState> = deckRepository.getDeckWithFlashcards()
         .filterNotNull()
         .map { deck -> HomeState(decks = deck, isLoading = false) }

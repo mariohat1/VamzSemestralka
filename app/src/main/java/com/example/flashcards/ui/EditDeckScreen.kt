@@ -115,7 +115,8 @@ fun EditBody(
     onDeckNameChange: (String) -> Unit,
     coroutineScope: CoroutineScope,
 ) {
-    var flashcardToDelete by remember { mutableStateOf<Flashcard?>(null) }
+    var flashcardToDeleteId by rememberSaveable { mutableStateOf<Int?>(null) }
+    val flashcardToDelete = flashcards.find { it.flashcardId == flashcardToDeleteId }
     Column(
         modifier = Modifier
             .padding(paddingValues),
@@ -178,7 +179,7 @@ fun EditBody(
                                 )
                             }
                         },
-                        onRequestDelete = { flashcardToDelete = it }
+                        onRequestDelete = { flashcardToDeleteId = it.flashcardId }
                     )
                 }
             }
@@ -186,11 +187,11 @@ fun EditBody(
     }
     flashcardToDelete?.let { flashcard ->
         DeleteConfirmationDialog(
-            onDismiss = { flashcardToDelete = null },
+            onDismiss = { flashcardToDeleteId = null },
             onConfirm = {
                 coroutineScope.launch {
                     viewModel.deleteFlashcard(flashcard)
-                    flashcardToDelete = null
+                    flashcardToDeleteId = null
                 }
             }
         )

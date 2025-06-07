@@ -36,11 +36,8 @@ object LengthConstants {
 @Composable
 fun FlashcardApp(navController: NavHostController = rememberNavController()) {
     val context = LocalContext.current.applicationContext
-    val database = FlaschcardDatabase.getDatabase(context)
-    val deckRepository =
-        DeckRepository(
-            database.deckDao()
-        )
+    val database =  FlaschcardDatabase.getDatabase(context)
+    val deckRepository = DeckRepository(database.deckDao())
 
     val flashcardRepository = FlashcardRepository(database.flashcardDao())
 

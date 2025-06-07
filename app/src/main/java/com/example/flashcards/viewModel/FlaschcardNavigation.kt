@@ -1,9 +1,14 @@
 package com.example.flashcards.viewModel
 
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -35,13 +40,12 @@ fun FlashcardNavHost(
     flashcardRepository: FlashcardRepository,
     modifier: Modifier = Modifier,
 ) {
-
-
     NavHost(
         navController = navController,
         startDestination = ROUTE_HOME,
         modifier = modifier
     ) {
+
         composable(route = ROUTE_HOME) {
             HomeScreen(
                 viewModel = viewModel( initializer = {HomeScreenViewModel(

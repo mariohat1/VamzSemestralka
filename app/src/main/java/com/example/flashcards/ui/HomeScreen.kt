@@ -35,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -48,8 +47,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.flashcards.FlashcardBottomBar
 import com.example.flashcards.FlashcardTopAppBar
-import com.example.flashcards.R
 import com.example.flashcards.LengthConstants
+import com.example.flashcards.R
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
@@ -180,7 +179,8 @@ fun HomeBody(
     homeState: HomeState
 
 ) {
-    var deckToDelete by remember { mutableStateOf<Deck?>(null) }
+    var deckToDeleteId by rememberSaveable { mutableStateOf<Int?>(null) }
+    val deckToDelete = decks.find { it.deck.deckId == deckToDeleteId }
     val coroutineScope = rememberCoroutineScope()
     when {
         homeState.isLoading -> {
@@ -229,7 +229,7 @@ fun HomeBody(
                                 onItemClick(item.deck.deckId)
                             },
                         navigateToUpdateScreen = navigateToUpdateScreen,
-                        onRequestDelete = { deckToDelete = it })
+                        onRequestDelete = { deckToDeleteId = it.deckId})
 
 
                 }
@@ -240,12 +240,13 @@ fun HomeBody(
     }
     deckToDelete?.let { deck ->
         DeleteDialog(
-            onDismiss = { deckToDelete = null },
+            onDismiss = { deckToDeleteId = null },
             onConfirm = {
                 coroutineScope.launch(Dispatchers.IO) {
-                    viewModel.deleteDeck(deck)
-                    deckToDelete = null
+                    viewModel.deleteDeck(deck.deck)
+
                 }
+                deckToDeleteId = null
             }
         )
     }
@@ -276,28 +277,7 @@ fun DeleteDialog(
 }
 
 
-@Preview
-@Composable
-fun HomeBodyPreview() {
-    val decks = listOf(
-        DeckWithFlashcards(
-            deck = Deck(1, "Nieco"),
-            flashcards = listOf(
-                Flashcard(1, 1, "Odpoveď 1", "1"),
-                Flashcard(2, 1, "Odpoveď 2", "1")
-            )
-        ),
-    )
-    HomeBody(
-        decks = decks,
-        modifier = Modifier,
-        onItemClick = {},
-        navigateToUpdateScreen = TODO(),
-        contentPadding = TODO(),
-        viewModel = TODO(),
-        homeState = TODO(),
-    )
-}
+
 
 
 @Composable
