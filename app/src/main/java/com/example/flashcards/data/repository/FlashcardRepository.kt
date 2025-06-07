@@ -55,8 +55,5 @@ class FlashcardRepository(private val flashcardDao: FlashcardDao) {
         return flashcardDao.getFlashcardById(flashcardId)
     }
 
-    fun getFlashcardsById(deckId: Int): Flow<List<Flashcard>> {
-        return flashcardDao.getFlashcardsById(deckId)
-    }
 
 }

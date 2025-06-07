@@ -9,5 +9,5 @@ data class DeckWithFlashcards(
         parentColumn = "deckId",
         entityColumn = "deckId"
     )
-    val flashcards: List<Flashcard>
+   val flashcards: List<Flashcard>
 )

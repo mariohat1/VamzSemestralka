@@ -6,4 +6,5 @@ data class PlayState(
     val flashcards: List<Flashcard> = emptyList(),
     val deckTitle:String = "",
     val isLoading:Boolean = true,
+
     )

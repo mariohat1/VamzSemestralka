@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,7 +41,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,7 +53,7 @@ import com.example.flashcards.LengthConstants
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.entities.DeckWithFlashcards
 import com.example.flashcards.data.entities.Flashcard
-import com.example.flashcards.data.states.HomeScreenState
+import com.example.flashcards.data.states.HomeState
 import com.example.flashcards.ui.theme.LightBlue
 import com.example.flashcards.ui.theme.LightSkyBlue
 import com.example.flashcards.viewModel.HomeScreenViewModel
@@ -72,11 +70,10 @@ fun HomeScreen(
 
     ) {
     Log.d("HomeScreen", "Recomposed")
-    val homeScreenState by viewModel.homeScreenState.collectAsState()
+    val homeScreenState by viewModel.homeState.collectAsState()
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var deckName by rememberSaveable { mutableStateOf("") }
-
     Scaffold(
         bottomBar = {
             FlashcardBottomBar(
@@ -91,7 +88,7 @@ fun HomeScreen(
                 navigateBack = { },
             )
         },
-        ) { contentPadding ->
+    ) { contentPadding ->
         if (isDialogOpen) {
             CreateDeckDialog(
                 onDismiss = {
@@ -118,26 +115,20 @@ fun HomeScreen(
             contentPadding = contentPadding,
             navigateToUpdateScreen = navigateToUpdateScreen,
             viewModel = viewModel,
-            homeScreenState = homeScreenState
+            homeState = homeScreenState
         )
-
-
     }
-
 }
 
 @Preview
 @Composable
 fun CreateDeckDialogPreview() {
-
     CreateDeckDialog(
         onDismiss = { },
         onSave = { },
         deckName = TODO(),
         onNameChange = TODO()
     )
-
-
 }
 
 @Composable
@@ -147,8 +138,6 @@ fun CreateDeckDialog(
     deckName: String,
     onNameChange: (String) -> Unit,
 ) {
-
-
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -158,8 +147,7 @@ fun CreateDeckDialog(
                     onDismiss()
                 },
                 enabled = deckName.isNotBlank(),
-
-                ) {
+            ) {
                 Text(stringResource(R.string.save))
             }
         },
@@ -175,8 +163,7 @@ fun CreateDeckDialog(
                 onValueChange = onNameChange,
                 label = { Text(stringResource(R.string.name)) },
                 singleLine = true,
-
-                )
+            )
         }
     )
 }
@@ -190,14 +177,13 @@ fun HomeBody(
     navigateToUpdateScreen: (Int) -> Unit,
     contentPadding: PaddingValues,
     viewModel: HomeScreenViewModel,
-    homeScreenState: HomeScreenState
+    homeState: HomeState
 
 ) {
     var deckToDelete by remember { mutableStateOf<Deck?>(null) }
     val coroutineScope = rememberCoroutineScope()
     when {
-        homeScreenState.isLoading -> {
-
+        homeState.isLoading -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -211,7 +197,7 @@ fun HomeBody(
             }
         }
 
-        homeScreenState.decks.isEmpty() -> {
+        homeState.decks.isEmpty() -> {
             Text(
                 text = stringResource(R.string.no_deck_found),
                 textAlign = TextAlign.Center,
@@ -222,15 +208,15 @@ fun HomeBody(
             )
         }
 
-        !homeScreenState.isLoading -> {
+        !homeState.isLoading -> {
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 200.dp),
+                columns = GridCells.Adaptive(minSize = 150.dp),
                 modifier = modifier
                     .fillMaxSize(),
+
                 contentPadding = contentPadding,
                 userScrollEnabled = true
             ) {
-
                 items(items = decks, key = { it.deck.deckId }) { item ->
                     DeckItem(
                         item = item,
@@ -238,7 +224,7 @@ fun HomeBody(
                             .clickable {
                                 Log.d(
                                     "Navigation",
-                                    "Spúšťam navigáciu na PlayScreen s deckId: ${item.deck.deckId}"
+                                    "Screen s deckId: ${item.deck.deckId}"
                                 )
                                 onItemClick(item.deck.deckId)
                             },
@@ -309,7 +295,7 @@ fun HomeBodyPreview() {
         navigateToUpdateScreen = TODO(),
         contentPadding = TODO(),
         viewModel = TODO(),
-        homeScreenState = TODO(),
+        homeState = TODO(),
     )
 }
 
@@ -323,24 +309,19 @@ fun DeckItem(
 
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-
-
     Card(
         modifier = modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-
-
+            .padding(4.dp)
             .fillMaxWidth()
             .aspectRatio(1f),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
     ) {
         Column(
             modifier = Modifier
                 .background(LightSkyBlue),
             horizontalAlignment = Alignment.CenterHorizontally,
-
-            ) {
+        ) {
             Text(
                 text = item.deck.name,
                 Modifier
@@ -392,8 +373,6 @@ fun DeckItem(
                     }
                 )
             }
-
-
         }
     }
 }

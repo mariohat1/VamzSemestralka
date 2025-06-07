@@ -1,6 +1,5 @@
 package com.example.flashcards.viewModel
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.SavedStateHandle
@@ -15,15 +14,19 @@ import com.example.flashcards.data.repository.FlashcardRepository
 import com.example.flashcards.ui.FlashcardEditScreen
 import com.example.flashcards.ui.HomeScreen
 import com.example.flashcards.ui.PlayScreen
-import com.example.flashcards.ui.UpdateScreen
+import com.example.flashcards.ui.EditDeckScreen
+import com.example.flashcards.viewModel.Routes.ROUTE_EDIT
+import com.example.flashcards.viewModel.Routes.ROUTE_HOME
+import com.example.flashcards.viewModel.Routes.ROUTE_PLAY
+import com.example.flashcards.viewModel.Routes.ROUTE_UPDATE
 
 
-
+object Routes {
 const val ROUTE_HOME = "home"
 const val ROUTE_UPDATE = "update/{deckId}"
 const val ROUTE_PLAY = "play/{deckId}"
 const val ROUTE_EDIT = "edit/{deckId}/{flashcardId}"
-
+}
 
 @Composable
 fun FlashcardNavHost(
@@ -65,10 +68,7 @@ fun FlashcardNavHost(
                     flashcardRepository = flashcardRepository,
                     savedStateHandle = SavedStateHandle(mapOf("deckId" to deckId))
                 ) })
-
-
-            Log.d("Navigation", "Vykonavam composable pre UpdateeDeck s deckId: ${backStackEntry.arguments?.getInt("deckId")}")
-            UpdateScreen(
+            EditDeckScreen(
                 viewModel = viewmodel,
                 modifier = Modifier,
                 navigateToEditScreen = { flashcardId ->
@@ -88,8 +88,8 @@ fun FlashcardNavHost(
             )
         ) { backStackEntry ->
 
-            val deckId = backStackEntry.arguments?.getInt("deckId") ?: return@composable
-            val flashcardId = backStackEntry.arguments?.getInt("flashcardId") ?: return@composable
+            val deckId = backStackEntry.arguments?.getInt("deckId")
+            val flashcardId = backStackEntry.arguments?.getInt("flashcardId")
             val viewmodel = viewModel(initializer = { FlashcardEditViewModel(
                 flashcardRepository = flashcardRepository,
                 deckRepository = deckRepository,
@@ -110,7 +110,6 @@ fun FlashcardNavHost(
 
                 )
         ) { backStackEntry ->
-            Log.d("Navigation", "Vykonavam composable pre PlayDestination s deckId: ${backStackEntry.arguments?.getInt("deckId")}")
             val deckId = backStackEntry.arguments?.getInt("deckId")
             val viewmodel = viewModel(initializer = {  PlayViewModel(
                 deckRepository,

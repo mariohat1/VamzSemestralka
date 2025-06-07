@@ -52,21 +52,21 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun UpdateScreen(
+fun EditDeckScreen(
     viewModel: EditDeckViewModel,
     navigateToEditScreen: (Int) -> Unit,
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
 ) {
 
-    val updateScreenState by viewModel.updateDeckState.collectAsState()
-    var deckName by rememberSaveable { mutableStateOf(updateScreenState.deck.deck.name) }
+    val editDeckState by viewModel.editDeckState.collectAsState()
+    var deckName by rememberSaveable { mutableStateOf(editDeckState.deck.deck.name) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(updateScreenState.deck.deck.name) {
+    LaunchedEffect(editDeckState.deck.deck.name) {
         if (deckName.isEmpty()) {
-            deckName = updateScreenState.deck.deck.name
+            deckName = editDeckState.deck.deck.name
         }
     }
     Scaffold(
@@ -75,7 +75,7 @@ fun UpdateScreen(
         },
         topBar = {
             FlashcardTopAppBar(
-                title = updateScreenState.deck.deck.name,
+                title = editDeckState.deck.deck.name,
                 canNavigateBack = true,
                 modifier = modifier,
                 navigateBack = navigateBack,
@@ -89,12 +89,10 @@ fun UpdateScreen(
             )
         },
     ) { contentPadding ->
-
-
-        UpdateBody(
+        EditBody(
             modifier = modifier,
             paddingValues = contentPadding,
-            flashcards = updateScreenState.deck.flashcards,
+            flashcards = editDeckState.deck.flashcards,
             navigateToEditExistingEditScreen = navigateToEditScreen,
             viewModel = viewModel,
             snackbarHostState = snackbarHostState,
@@ -102,14 +100,11 @@ fun UpdateScreen(
             coroutineScope = coroutineScope,
             onDeckNameChange = { deckName = it },
         )
-
     }
-
-
 }
 
 @Composable
-fun UpdateBody(
+fun EditBody(
     paddingValues: PaddingValues,
     modifier: Modifier,
     flashcards: List<Flashcard>,
@@ -138,7 +133,6 @@ fun UpdateBody(
                 .fillMaxWidth()
                 .padding(8.dp)
         )
-
         Button(
             onClick = {
                 coroutineScope.launch {
@@ -146,6 +140,7 @@ fun UpdateBody(
                 }
             },
             modifier = Modifier.align(Alignment.Start).padding(start = 8.dp),
+            enabled = deckName.isNotEmpty()
         ) {
             Text(stringResource(R.string.save))
         }

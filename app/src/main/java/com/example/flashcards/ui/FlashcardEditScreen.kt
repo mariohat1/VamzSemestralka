@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -31,6 +33,28 @@ fun FlashcardEditScreen(
     val questionText by viewModel.questionText.collectAsState()
     val answerText by viewModel.answerText.collectAsState()
     Scaffold(
+        bottomBar = {
+            BottomAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = MaterialTheme.colorScheme.background
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                val isEnabled = questionText.isNotBlank() && answerText.isNotBlank()
+                val coroutineScope = rememberCoroutineScope()
+                Button(
+                    modifier = Modifier.padding(8.dp),
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.saveFlashcard(questionText, answerText)
+                        }
+                        navigateBack()
+                    },
+                    enabled = isEnabled
+                ) {
+                    Text(stringResource(R.string.save))
+                }
+            }
+        },
         topBar = {
             FlashcardTopAppBar(
                 title = flashcardEditState.deckTitle,
@@ -38,34 +62,28 @@ fun FlashcardEditScreen(
                 modifier = modifier,
                 navigateBack = navigateBack,
             )
-        },
+        }        ,
     ) { innerPadding ->
         EditBody(
             innerPadding,
-            viewModel,
             question = questionText,
             onQuestionChange = { viewModel.onQuestionChanged(it) },
             answer = answerText,
             onAnswerChange = { viewModel.onAnswerChanged(it) },
-            onSave = navigateBack,
         )
     }
 }
 
 
 @Composable
-private fun EditBody(
+fun EditBody(
     innerPadding: PaddingValues,
-    viewModel: FlashcardEditViewModel,
     question: String,
     onQuestionChange: (String) -> Unit,
     answer: String,
     onAnswerChange: (String) -> Unit,
-    onSave: () -> Unit
 
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     Column(
         modifier = Modifier
             .padding(innerPadding)
@@ -78,9 +96,7 @@ private fun EditBody(
             modifier = Modifier.fillMaxWidth()
 
         )
-
         Spacer(modifier = Modifier.height(16.dp))
-
         TextField(
             value = answer,
             onValueChange = onAnswerChange,
@@ -88,21 +104,8 @@ private fun EditBody(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp),
-        )
-
+            )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                if (question.isNotBlank() && answer.isNotBlank()) {
-                    coroutineScope.launch {
-                        viewModel.saveFlashcard(question = question, answer = answer)
-                    }
-                    onSave()
-                }
-            },
-            enabled = question.isNotBlank() && answer.isNotBlank(),
-        ) {
-            Text(stringResource(R.string.save))
-        }
+
     }
 }

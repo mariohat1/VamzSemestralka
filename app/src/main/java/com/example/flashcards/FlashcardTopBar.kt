@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.flashcards.data.database.FlaschcardDatabase
 import com.example.flashcards.data.repository.DeckRepository
 import com.example.flashcards.data.repository.FlashcardRepository
+import com.example.flashcards.ui.theme.Cyan
 import com.example.flashcards.ui.theme.LightSkyBlue
 import com.example.flashcards.viewModel.FlashcardNavHost
 
@@ -58,8 +59,6 @@ fun FlashcardTopAppBar(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit
 ) {
-
-
     CenterAlignedTopAppBar(
         title = { Text(title) },
         modifier = modifier,
@@ -75,7 +74,7 @@ fun FlashcardTopAppBar(
         },
 
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFF42A5F5),
+            containerColor = Cyan,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
             navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
         )
@@ -88,17 +87,13 @@ fun FlashcardBottomBar(
 ) {
     BottomAppBar(
         containerColor = MaterialTheme.colorScheme.background,
-
-
         ) {
         Spacer(modifier = Modifier.weight(1f))
-
         FloatingActionButton(
             modifier = Modifier.padding(8.dp),
             onClick = onClick,
             containerColor = LightSkyBlue,
             elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-
         ) {
             Icon(
                 imageVector = Icons.Rounded.Add,

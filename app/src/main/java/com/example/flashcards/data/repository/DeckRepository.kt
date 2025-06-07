@@ -25,13 +25,6 @@ class DeckRepository(private val deckDao: DeckDao) {
 
     }
 
-
-    fun getAllDecks(): Flow<List<Deck>> {
-        return deckDao.getAllDecks()
-
-    }
-
-
     fun getDeck(deckId: Int): Flow<DeckWithFlashcards> {
         return deckDao.getDeck(deckId)
     }

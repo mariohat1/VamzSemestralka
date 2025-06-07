@@ -5,9 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.flashcards.data.entities.Deck
 import com.example.flashcards.data.repository.DeckRepository
 import com.example.flashcards.data.repository.FlashcardRepository
-import com.example.flashcards.data.states.HomeScreenState
+import com.example.flashcards.data.states.HomeState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -17,24 +18,22 @@ class HomeScreenViewModel(
 ) : ViewModel() {
 
     suspend fun insert(deckName: String) {
-
         deckRepository.insertDeck(Deck(name = deckName))
     }
 
-    val homeScreenState: StateFlow<HomeScreenState> = deckRepository.getDeckWithFlashcards()
-        .map { deck -> HomeScreenState(decks = deck, isLoading = false) }
+    val homeState: StateFlow<HomeState> = deckRepository.getDeckWithFlashcards()
+        .filterNotNull()
+        .map { deck -> HomeState(decks = deck, isLoading = false) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            HomeScreenState()
+            HomeState()
         )
 
 
     suspend fun deleteDeck(deck: Deck) {
-
         flashcardRepository.deleteFlashcardsByDeckId(deck.deckId)
         deckRepository.deleteDeck(deck)
-
     }
 
 

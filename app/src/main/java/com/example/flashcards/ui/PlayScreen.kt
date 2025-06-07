@@ -61,6 +61,10 @@ fun PlayScreen(
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    Log.d(
+        "PlayScreen",
+        "Recomposed"
+    )
     val playState by viewModel.playState.collectAsState()
     val currentIndex by viewModel.currentIndex.collectAsState()
     val isFlipped by viewModel.isFlipped.collectAsState()
@@ -150,7 +154,7 @@ fun PlayScreenBody(
 }
 
 @Composable
-private fun PlayButtons(
+fun PlayButtons(
     modifier: Modifier,
     currentIndex: Int,
     viewModel: PlayViewModel,
@@ -201,15 +205,16 @@ private fun PlayButtons(
             }
 
             Box(
-                modifier = modifier.weight(1.1f),
+                modifier = modifier.weight(1.2f),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.updateFlashcardStatus(card.flashcardId, true)
-                            viewModel.recalculateIndex()
+
                         }
+                        viewModel.recalculateIndex()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LightSkyBlue,
@@ -281,7 +286,6 @@ fun FlashcardCard(
 
                     }
                     .clickable(onClick = onFlip),
-                shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Box(

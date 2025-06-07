@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FlashCards</string>
+    <string name="app_name">Flashcards</string>
     <string name = "no_deck_found">No Decks available.</string>>
     <string name = "no_flashcards">No Flashcards available.</string>>
     <string name = "save">Save</string>>
@@ -23,9 +23,4 @@
     <string name="edit">Edit</string>
     <string name="deck_name">Deck Name</string>
     >
-
-
-
-
-
 </resources>
